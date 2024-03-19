@@ -14,8 +14,8 @@ public class SparkConfig {
                 .master("local[*]")
                 .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
                 .config("spark.hadoop.fs.s3a.access.key", "<our-team-access-key>")
-                .config("spark.hadoop.fs.s3a.secret.key", "<our-team-secret-key>")
                 .config("spark.hadoop.fs.s3a.multipart.size", "104857600")
+                .config("spark.io.compression.codec", "snappy")
                 .getOrCreate();
     }
 }

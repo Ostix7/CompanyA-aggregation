@@ -1,29 +1,35 @@
 package company.a.charlee.reader;
 
+import company.a.charlee.services.SocialMediaParquetProcessor;
+import company.a.charlee.services.telegram.TelegramProcessingService;
+import company.a.charlee.services.youtube.YoutubeProcessingService;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+
+import java.net.URL;
 
 @Service
 public class ParquetReaderService {
 
-    private SparkSession sparkSession;
+    private final SparkSession sparkSession;
+    private final SocialMediaParquetProcessor telegramProcessor;
+    private final SocialMediaParquetProcessor youtubeProcessor;
 
-    public ParquetReaderService() {
-        sparkSession = SparkSession.builder()
-                .appName("Parquet Reader")
-                .master("local[*]")
-                .getOrCreate();
+    public ParquetReaderService(SparkSession sparkSession, TelegramProcessingService telegramProcessor, YoutubeProcessingService youtubeProcessor) {
+        this.sparkSession = sparkSession;
+        this.telegramProcessor = telegramProcessor;
+        this.youtubeProcessor = youtubeProcessor;
     }
 
-    @Scheduled(fixedRate = 3600000) //hour
-    public void readParquetFiles() {
-        Dataset<Row> parquetFileDF = sparkSession.read().parquet("s3a://bucket-name/path/to/parquet/file");
-        
-        parquetFileDF.printSchema();
-        
-        parquetFileDF.show();
+    public void readAndProcessParquetFiles(String pathToParquetFile, String mediaType) {
+        if ("telegram".equals(mediaType)) {
+            telegramProcessor.processParquet(pathToParquetFile);
+        } else if ("youtube".equals(mediaType)) {
+            youtubeProcessor.processParquet(pathToParquetFile);
+        } else {
+            throw new IllegalArgumentException("Unsupported media type: " + mediaType);
+        }
     }
 }
