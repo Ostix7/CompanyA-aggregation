@@ -2,12 +2,18 @@ package company.a.charlee.services.telegram;
 
 import company.a.charlee.entity.*;
 import company.a.charlee.services.SocialMediaParquetProcessor;
+import opennlp.tools.postag.POSTaggerME;
+import opennlp.tools.tokenize.Tokenizer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class TelegramProcessingService implements SocialMediaParquetProcessor {
@@ -20,15 +26,29 @@ public class TelegramProcessingService implements SocialMediaParquetProcessor {
     private final TelegramCommentService commentService;
 
     private final TelegramReactionService reactionService;
+    private final Tokenizer tokenizer;
+    private final POSTaggerME posTagger;
 
 
-    public TelegramProcessingService(TelegramChannelService channelService, TelegramPostService postService, SparkSession sparkSession, TelegramMediaService mediaService, TelegramCommentService commentService, TelegramReactionService reactionService) {
+    @Autowired
+    public TelegramProcessingService(
+            TelegramChannelService channelService,
+            TelegramPostService postService,
+            SparkSession sparkSession,
+            TelegramMediaService mediaService,
+            TelegramCommentService commentService,
+            TelegramReactionService reactionService,
+            Tokenizer tokenizer,
+            POSTaggerME posTagger
+    ) {
         this.channelService = channelService;
         this.postService = postService;
         this.sparkSession = sparkSession;
         this.mediaService = mediaService;
         this.commentService = commentService;
         this.reactionService = reactionService;
+        this.tokenizer = tokenizer;
+        this.posTagger = posTagger;
     }
 
     @Override
@@ -103,5 +123,26 @@ public class TelegramProcessingService implements SocialMediaParquetProcessor {
     }
     private void doAnalyse(TelegramChannel telegramChannel, TelegramPost telegramPost, TelegramReaction reaction, TelegramComment telegramComment, TelegramMedia media) {
         //TODO: starting impl of algorithms
+        performTopicModeling(telegramPost);
     }
+
+    private void performTopicModeling(TelegramPost telegramPost) {
+        String postText = telegramPost.getFullText();
+        String[] tokens = tokenizer.tokenize(postText);
+        String[] tags = posTagger.tag(tokens);
+        Map<String, Integer> significantWordOccurrences = new HashMap<>();
+        for (int i = 0; i < tags.length; i++) {
+            if (tags[i].equals("NOUN") || tags[i].equals("PROPN") || tags[i].equals("NOUN+PART") || tags[i].equals("PROPN+PART")) {
+                significantWordOccurrences.put(tokens[i], significantWordOccurrences.getOrDefault(tokens[i], 0) + 1);
+            }
+        }
+        List<String> topFiveWords = significantWordOccurrences.entrySet()
+                .stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+                .limit(5)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+        telegramPost.setTopics(topFiveWords);
+    }
+
 }

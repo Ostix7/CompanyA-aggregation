@@ -25,8 +25,14 @@ public class TelegramPost {
     private java.time.Instant updatedAt;
     private String lang;
     private String segment;
+    @Column(columnDefinition = "TEXT")
     private String fullText;
     private Integer viewCount;
+
+    @ElementCollection
+    @CollectionTable(name = "telegram_post_topics")
+    @Column(name = "topic_modeling")
+    private List<String> topics;
 
     @OneToMany(mappedBy = "post")
     private List<TelegramMedia> media;
