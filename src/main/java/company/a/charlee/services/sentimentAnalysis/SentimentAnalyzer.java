@@ -3,7 +3,6 @@ package company.a.charlee.services.sentimentAnalysis;
 import company.a.charlee.entity.TelegramPost;
 import company.a.charlee.utils.DetectedLanguage;
 import company.a.charlee.utils.LanguageProcessingUtils;
-import company.a.charlee.utils.MultiLanguageTokenizer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,8 +13,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class SentimentAnalyzer {
-
-    private final MultiLanguageTokenizer tokenizer;
 
     private final Map<String, Integer> uaSentimentBase;
 
@@ -38,7 +35,7 @@ public class SentimentAnalyzer {
                 break;
             default:
                 throw new UnsupportedOperationException("Sentiment analysis for this language is currently not supported");
-        };
+        }
 
         Map<String, Integer> index = new TreeMap<>();
 
