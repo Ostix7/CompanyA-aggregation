@@ -1,7 +1,7 @@
 package company.a.charlee.services.telegram;
 
-import company.a.charlee.entity.TelegramPost;
-import company.a.charlee.repository.TelegramPostRepository;
+import company.a.charlee.entity.telegram.TelegramPost;
+import company.a.charlee.repository.telegram.TelegramPostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
