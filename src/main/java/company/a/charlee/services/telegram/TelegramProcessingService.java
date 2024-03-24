@@ -2,13 +2,15 @@ package company.a.charlee.services.telegram;
 
 import company.a.charlee.entity.*;
 import company.a.charlee.services.SocialMediaParquetProcessor;
-import company.a.charlee.utils.POSFilter;
-import company.a.charlee.utils.Tokenizer;
+import company.a.charlee.utils.DetectedLanguage;
+import company.a.charlee.utils.MultiLanguageDetector;
+import company.a.charlee.utils.MultiLanguagePOSFilter;
+import company.a.charlee.utils.MultiLanguageTokenizer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
@@ -26,8 +28,9 @@ public class TelegramProcessingService implements SocialMediaParquetProcessor {
     private final TelegramCommentService commentService;
 
     private final TelegramReactionService reactionService;
-    private final Tokenizer tokenizer;
-    private final POSFilter posFilter;
+    private final MultiLanguageTokenizer tokenizer;
+    private final MultiLanguagePOSFilter posFilter;
+    private final MultiLanguageDetector languageDetector;
 
 
     @Autowired
@@ -38,8 +41,9 @@ public class TelegramProcessingService implements SocialMediaParquetProcessor {
             TelegramMediaService mediaService,
             TelegramCommentService commentService,
             TelegramReactionService reactionService,
-            Tokenizer tokenizer,
-            POSFilter posFilter
+            MultiLanguageTokenizer tokenizer,
+            MultiLanguagePOSFilter posFilter,
+            MultiLanguageDetector languageDetector
     ) {
         this.channelService = channelService;
         this.postService = postService;
@@ -49,6 +53,7 @@ public class TelegramProcessingService implements SocialMediaParquetProcessor {
         this.reactionService = reactionService;
         this.tokenizer = tokenizer;
         this.posFilter = posFilter;
+        this.languageDetector = languageDetector;
     }
 
     @Override
@@ -128,8 +133,9 @@ public class TelegramProcessingService implements SocialMediaParquetProcessor {
 
     private void performTopicModeling(TelegramPost telegramPost) {
         String postText = telegramPost.getFullText();
-        List<String> tokens = tokenizer.tokenize(postText);
-        List<String> filteredTokens = posFilter.filterSignificantPOS(tokens);
+        DetectedLanguage language = languageDetector.detectLanguage(postText);
+        List<String> tokens = tokenizer.tokenize(postText, language);
+        List<String> filteredTokens = posFilter.filterSignificantPOS(tokens, language);
         Map<String, Integer> significantWordOccurrences = new HashMap<>();
         for (String filteredToken : filteredTokens) {
             significantWordOccurrences.put(filteredToken, significantWordOccurrences.getOrDefault(filteredToken, 0) + 1);
