@@ -2,8 +2,8 @@ package company.a.charlee.services.telegram;
 
 import company.a.charlee.entity.*;
 import company.a.charlee.services.SocialMediaParquetProcessor;
-import opennlp.tools.postag.POSTaggerME;
-import opennlp.tools.tokenize.Tokenizer;
+import company.a.charlee.utils.POSFilter;
+import company.a.charlee.utils.Tokenizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.apache.spark.sql.Dataset;
@@ -27,7 +27,7 @@ public class TelegramProcessingService implements SocialMediaParquetProcessor {
 
     private final TelegramReactionService reactionService;
     private final Tokenizer tokenizer;
-    private final POSTaggerME posTagger;
+    private final POSFilter posFilter;
 
 
     @Autowired
@@ -39,7 +39,7 @@ public class TelegramProcessingService implements SocialMediaParquetProcessor {
             TelegramCommentService commentService,
             TelegramReactionService reactionService,
             Tokenizer tokenizer,
-            POSTaggerME posTagger
+            POSFilter posFilter
     ) {
         this.channelService = channelService;
         this.postService = postService;
@@ -48,7 +48,7 @@ public class TelegramProcessingService implements SocialMediaParquetProcessor {
         this.commentService = commentService;
         this.reactionService = reactionService;
         this.tokenizer = tokenizer;
-        this.posTagger = posTagger;
+        this.posFilter = posFilter;
     }
 
     @Override
@@ -128,13 +128,11 @@ public class TelegramProcessingService implements SocialMediaParquetProcessor {
 
     private void performTopicModeling(TelegramPost telegramPost) {
         String postText = telegramPost.getFullText();
-        String[] tokens = tokenizer.tokenize(postText);
-        String[] tags = posTagger.tag(tokens);
+        List<String> tokens = tokenizer.tokenize(postText);
+        List<String> filteredTokens = posFilter.filterSignificantPOS(tokens);
         Map<String, Integer> significantWordOccurrences = new HashMap<>();
-        for (int i = 0; i < tags.length; i++) {
-            if (tags[i].equals("NOUN") || tags[i].equals("PROPN") || tags[i].equals("NOUN+PART") || tags[i].equals("PROPN+PART")) {
-                significantWordOccurrences.put(tokens[i], significantWordOccurrences.getOrDefault(tokens[i], 0) + 1);
-            }
+        for (String filteredToken : filteredTokens) {
+            significantWordOccurrences.put(filteredToken, significantWordOccurrences.getOrDefault(filteredToken, 0) + 1);
         }
         List<String> topFiveWords = significantWordOccurrences.entrySet()
                 .stream()
