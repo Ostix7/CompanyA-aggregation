@@ -12,11 +12,24 @@ public class LanguageProcessingUtils {
             "ятимий", "увати", "ювати", "ці", "ться", "ись"
     };
 
+    private static final String[] ruEndings = {
+            "ом", "ем", "е", "а", "я", "ы", "и", "у",
+            "ю", "ый", "ий", "ой", "тся", "ться", "ть",
+            "ая", "яя", "ое", "ее", "ые", "ие", "сть"
+    };
+
     private static final String uaEndingRegex = generateLangEndingsRegex(uaEndings);
+
+    private static final String ruEndingRegex = generateLangEndingsRegex(ruEndings);
 
     public static String trimUAEnding(String uaWord) {
         String res = uaWord.replaceAll(uaEndingRegex, "");
         return res.isEmpty() ? uaWord : res;
+    }
+
+    public static String trimRUEnding(String ruWord) {
+        String res = ruWord.replaceAll(ruEndingRegex, "");
+        return res.isEmpty() ? ruWord : res;
     }
 
     private static String generateLangEndingsRegex(String[] endings) {

@@ -17,10 +17,12 @@ public class SentimentAnalyzer {
     private final Map<String, Integer> uaSentimentBase;
 
     private final Map<String, Integer> enSentimentBase;
+    
+    private final Map<String, Integer> ruSentimentBase;
 
     public void analysePost(TelegramPost post, List<String> tokens, DetectedLanguage lang) {
         if (tokens.isEmpty())
-            throw new RuntimeException("Error: cannot tokenize telegram post text");
+            throw new RuntimeException("Error: cannot tokenize the text of the post");
 
         Function<String, String> transformFunc = null;
         Map<String, Integer> searchMap;
@@ -32,6 +34,10 @@ public class SentimentAnalyzer {
                 break;
             case ENGLISH:
                 searchMap = enSentimentBase;
+                break;
+            case RUSSIAN:
+                transformFunc = LanguageProcessingUtils::trimRUEnding;
+                searchMap = ruSentimentBase;
                 break;
             default:
                 throw new UnsupportedOperationException("Sentiment analysis for this language is currently not supported");

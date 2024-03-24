@@ -31,6 +31,13 @@ public class SentimentLexiconLoader {
         return resMap;
     }
 
+    @Bean
+    public Map<String, Integer> ruSentimentBase() throws IOException {
+        Map<String, Integer> resMap = new TreeMap<>();
+        parseFile(resMap, "rusentilex_2017-1.txt", ";", LanguageProcessingUtils::trimRUEnding, 1);
+        return resMap;
+    }
+
     private static void parseFile(Map<String, Integer> mapToFill,
                                   String fileName,
                                   String delim,
