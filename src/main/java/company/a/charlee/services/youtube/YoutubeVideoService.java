@@ -1,30 +1,32 @@
-package company.a.charlee.services.telegram;
+package company.a.charlee.services.youtube;
 
 import company.a.charlee.entity.telegram.TelegramComment;
+import company.a.charlee.entity.youtube.YoutubeVideo;
 import company.a.charlee.repository.telegram.TelegramCommentRepository;
+import company.a.charlee.repository.youtube.YoutubeVideoRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class TelegramCommentService {
+public class YoutubeVideoService {
 
-    private final TelegramCommentRepository repository;
+    private final YoutubeVideoRepository repository;
 
-    public TelegramCommentService(TelegramCommentRepository repository) {
+    public YoutubeVideoService(YoutubeVideoRepository repository) {
         this.repository = repository;
     }
 
-    public TelegramComment save(TelegramComment comment) {
+    public YoutubeVideo save(YoutubeVideo comment) {
         return repository.save(comment);
     }
 
-    public List<TelegramComment> findAll() {
+    public List<YoutubeVideo> findAll() {
         return repository.findAll();
     }
 
-    public Optional<TelegramComment> findById(Long id) {
+    public Optional<YoutubeVideo> findById(Long id) {
         return repository.findById(id);
     }
 

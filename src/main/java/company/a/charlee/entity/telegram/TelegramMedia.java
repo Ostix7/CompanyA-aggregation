@@ -1,4 +1,4 @@
-package company.a.charlee.entity;
+package company.a.charlee.entity.telegram;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;

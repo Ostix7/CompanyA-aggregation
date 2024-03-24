@@ -1,10 +1,11 @@
-package company.a.charlee.entity;
+package company.a.charlee.entity.telegram;
 
 import javax.persistence.*;
 
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -45,4 +46,37 @@ public class TelegramPost {
 
     @OneToMany(mappedBy = "post")
     private List<TelegramReaction> reactions;
+
+    @Column(name = "is_processed")
+    private boolean isProcessed;
+
+    public void addMedia(TelegramMedia media) {
+        if (media != null) {
+            if (this.media == null) {
+                this.media = new ArrayList<>();
+            }
+            media.setPost(this);
+            this.media.add(media);
+        }
+    }
+
+    public void addComment(TelegramComment comment) {
+        if (comment != null) {
+            if (this.comments == null) {
+                this.comments = new ArrayList<>();
+            }
+            comment.setPost(this);
+            this.comments.add(comment);
+        }
+    }
+
+    public void addReaction(TelegramReaction reaction) {
+        if (reaction != null) {
+            if (this.reactions == null) {
+                this.reactions = new ArrayList<>();
+            }
+            reaction.setPost(this);
+            this.reactions.add(reaction);
+        }
+    }
 }
