@@ -34,6 +34,9 @@ public class TelegramPost {
     @Column(name = "topic_modeling")
     private List<String> topics;
 
+    @Column(name = "sentiment_value")
+    private Double sentimentValue;
+
     @OneToMany(mappedBy = "post")
     private List<TelegramMedia> media;
 

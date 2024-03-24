@@ -2,11 +2,12 @@ package company.a.charlee.services.telegram;
 
 import company.a.charlee.entity.*;
 import company.a.charlee.services.SocialMediaParquetProcessor;
+import company.a.charlee.services.sentimentAnalysis.SentimentAnalyzer;
 import company.a.charlee.utils.DetectedLanguage;
 import company.a.charlee.utils.MultiLanguageDetector;
 import company.a.charlee.utils.MultiLanguagePOSFilter;
 import company.a.charlee.utils.MultiLanguageTokenizer;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
@@ -18,6 +19,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class TelegramProcessingService implements SocialMediaParquetProcessor {
 
     private final TelegramChannelService channelService;
@@ -32,29 +34,7 @@ public class TelegramProcessingService implements SocialMediaParquetProcessor {
     private final MultiLanguagePOSFilter posFilter;
     private final MultiLanguageDetector languageDetector;
 
-
-    @Autowired
-    public TelegramProcessingService(
-            TelegramChannelService channelService,
-            TelegramPostService postService,
-            SparkSession sparkSession,
-            TelegramMediaService mediaService,
-            TelegramCommentService commentService,
-            TelegramReactionService reactionService,
-            MultiLanguageTokenizer tokenizer,
-            MultiLanguagePOSFilter posFilter,
-            MultiLanguageDetector languageDetector
-    ) {
-        this.channelService = channelService;
-        this.postService = postService;
-        this.sparkSession = sparkSession;
-        this.mediaService = mediaService;
-        this.commentService = commentService;
-        this.reactionService = reactionService;
-        this.tokenizer = tokenizer;
-        this.posFilter = posFilter;
-        this.languageDetector = languageDetector;
-    }
+    private final SentimentAnalyzer analyzer;
 
     @Override
     public void processParquet(String pathToParquetFile) {
@@ -128,13 +108,14 @@ public class TelegramProcessingService implements SocialMediaParquetProcessor {
     }
     private void doAnalyse(TelegramChannel telegramChannel, TelegramPost telegramPost, TelegramReaction reaction, TelegramComment telegramComment, TelegramMedia media) {
         //TODO: starting impl of algorithms
-        performTopicModeling(telegramPost);
-    }
-
-    private void performTopicModeling(TelegramPost telegramPost) {
         String postText = telegramPost.getFullText();
         DetectedLanguage language = languageDetector.detectLanguage(postText);
         List<String> tokens = tokenizer.tokenize(postText, language);
+        performTopicModeling(telegramPost, tokens, language);
+        analyzer.analysePost(telegramPost, tokens, language);
+    }
+
+    private void performTopicModeling(TelegramPost telegramPost, List<String> tokens, DetectedLanguage language) {
         List<String> filteredTokens = posFilter.filterSignificantPOS(tokens, language);
         Map<String, Integer> significantWordOccurrences = new HashMap<>();
         for (String filteredToken : filteredTokens) {
