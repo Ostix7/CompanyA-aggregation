@@ -1,6 +1,6 @@
 package company.a.charlee.services.sentimentAnalysis;
 
-import company.a.charlee.entity.TelegramPost;
+import company.a.charlee.entity.telegram.TelegramPost;
 import company.a.charlee.utils.DetectedLanguage;
 import company.a.charlee.utils.LanguageProcessingUtils;
 import lombok.RequiredArgsConstructor;
