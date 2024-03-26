@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -43,49 +42,22 @@ public class SentimentAnalyzer {
                 throw new UnsupportedOperationException("Sentiment analysis for this language is currently not supported");
         }
 
-        Map<String, Integer> index = new TreeMap<>();
-
-        List<String> modifiedTokens;
-
-        if (transformFunc != null)
-            modifiedTokens = tokens.stream().map(transformFunc).collect(Collectors.toList());
-        else
-            modifiedTokens = new ArrayList<>(tokens);
-
-        Collections.sort(modifiedTokens);
-
-        buildFullTextIndex(index, modifiedTokens);
-
         int sentimentVal;
         int accumulator = 0;
         int absentWordsCount = 0;
 
-        for (Map.Entry<String, Integer> entry : index.entrySet()) {
-            sentimentVal = searchMap.getOrDefault(entry.getKey(), 0);
+        for (String token : tokens) {
+            if (transformFunc != null)
+                token = transformFunc.apply(token);
+            sentimentVal = searchMap.getOrDefault(token, 0);
             if (sentimentVal == 0)
                 absentWordsCount++;
-            accumulator += sentimentVal * entry.getValue();
+            accumulator += sentimentVal;
         }
 
-        double sentimentValue = (modifiedTokens.size() == absentWordsCount) ? 0.0 :
-                1.0 * accumulator / (modifiedTokens.size() - absentWordsCount);
+        double sentimentValue = (tokens.size() == absentWordsCount) ? 0.0 :
+                1.0 * accumulator / (tokens.size() - absentWordsCount);
         post.setSentimentValue(sentimentValue);
-    }
-
-
-    private void buildFullTextIndex(Map<String, Integer> indexToFill, List<String> sortedTokens) {
-        String prevToken = null;
-        int tokenCnt = 1;
-        for (String token : sortedTokens) {
-            if(token.equals(prevToken))
-                tokenCnt++;
-            else if (prevToken != null) {
-                indexToFill.put(prevToken, tokenCnt);
-                tokenCnt = 1;
-            }
-            prevToken = token;
-        }
-        indexToFill.put(prevToken, tokenCnt);
     }
 
 }
