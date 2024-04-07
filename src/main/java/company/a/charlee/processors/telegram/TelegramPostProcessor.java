@@ -20,7 +20,7 @@ public class TelegramPostProcessor {
 
     @Scheduled(fixedRate = 600000)
     public void processUnprocessedPosts() {
-        List<TelegramPost> unprocessedPosts = telegramPostRepository.findByProcessedFalse();
+        List<TelegramPost> unprocessedPosts = telegramPostRepository.findByIsProcessedFalse();
         for (TelegramPost post : unprocessedPosts) {
             telegramProcessingService.doAnalyse(post);
             post.setProcessed(true);

@@ -1,24 +1,24 @@
-package company.a.charlee.entity.telegram;
+package company.a.charlee.entity.processed;
+
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import lombok.Getter;
-import lombok.Setter;
 
 @Entity
 @Getter
 @Setter
-public class TelegramMedia {
+public class ProcessedFile {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String mediaId;
-
-    @ManyToOne
-    private TelegramPost post;
-
+    private String id;
+    
+    private String bigQueryId;
     private String mediaType;
-    private String mediaDuration;
+    private Boolean isProcessed;
+
 }

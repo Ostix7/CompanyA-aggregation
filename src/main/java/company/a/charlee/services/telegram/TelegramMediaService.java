@@ -24,11 +24,11 @@ public class TelegramMediaService {
         return repository.findAll();
     }
 
-    public Optional<TelegramMedia> findById(Long id) {
+    public Optional<TelegramMedia> findById(String id) {
         return repository.findById(id);
     }
 
-    public void delete(Long id) {
+    public void delete(String id) {
         repository.deleteById(id);
     }
 }

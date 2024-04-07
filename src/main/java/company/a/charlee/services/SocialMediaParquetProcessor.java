@@ -1,5 +1,7 @@
 package company.a.charlee.services;
 
+import com.google.cloud.bigquery.TableResult;
+
 public interface SocialMediaParquetProcessor {
-    void processParquet(String pathToParquetFile);
+    void processBigQueryResult(TableResult result);
 }

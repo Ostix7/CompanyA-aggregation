@@ -14,7 +14,7 @@ import java.util.List;
 public class TelegramPost {
     @Id
     private String id;
-    private Integer schemaVersion;
+    private Long schemaVersion;
 
     @ManyToOne
     @JoinColumn(name = "channel_id", referencedColumnName = "channelId")
@@ -28,7 +28,7 @@ public class TelegramPost {
     private String segment;
     @Column(columnDefinition = "TEXT")
     private String fullText;
-    private Integer viewCount;
+    private Long viewCount;
 
     @ElementCollection
     @CollectionTable(name = "telegram_post_topics")
@@ -38,13 +38,13 @@ public class TelegramPost {
     @Column(name = "sentiment_value")
     private Double sentimentValue;
 
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<TelegramMedia> media;
 
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<TelegramComment> comments;
 
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<TelegramReaction> reactions;
 
     @Column(name = "is_processed")
@@ -79,4 +79,6 @@ public class TelegramPost {
             this.reactions.add(reaction);
         }
     }
+
+
 }

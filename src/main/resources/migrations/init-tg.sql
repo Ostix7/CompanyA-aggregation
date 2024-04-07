@@ -60,3 +60,6 @@ CREATE TABLE social_data.telegram_reactions (
                                                 reaction_data social_data.telegram_reaction_type[],
                                                 FOREIGN KEY (post_id) REFERENCES social_data.telegram_posts(id)
 );
+
+
+ALTER TABLE telegram_media ALTER COLUMN media_id TYPE character varying;

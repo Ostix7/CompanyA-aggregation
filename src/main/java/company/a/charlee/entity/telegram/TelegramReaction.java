@@ -22,5 +22,8 @@ public class TelegramReaction {
     private TelegramPost post;
 
     private String emoji;
-    private Integer count;
+    private Long count;
+
+    @ManyToOne
+    private TelegramComment comment;
 }

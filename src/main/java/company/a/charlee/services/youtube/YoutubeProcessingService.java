@@ -1,29 +1,30 @@
 package company.a.charlee.services.youtube;
 
+import com.google.cloud.bigquery.FieldValue;
+import com.google.cloud.bigquery.FieldValueList;
+import com.google.cloud.bigquery.TableResult;
 import company.a.charlee.entity.telegram.*;
 import company.a.charlee.entity.youtube.YoutubeCaption;
 import company.a.charlee.entity.youtube.YoutubeChannel;
 import company.a.charlee.entity.youtube.YoutubeComment;
 import company.a.charlee.entity.youtube.YoutubeVideo;
 import company.a.charlee.services.SocialMediaParquetProcessor;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SparkSession;
+
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+
 @Service
 public class YoutubeProcessingService implements SocialMediaParquetProcessor {
 
-    private final SparkSession sparkSession;
     private final YoutubeChannelService youtubeChannelService;
     private final YoutubeVideoService youtubeVideoService;
     private final YoutubeCommentService youtubeCommentService;
     private final YoutubeCaptionService youtubeCaptionService;
 
 
-    public YoutubeProcessingService(SparkSession sparkSession, YoutubeChannelService youtubeChannelService, YoutubeVideoService youtubeVideoService, YoutubeCommentService youtubeCommentService, YoutubeCaptionService youtubeCaptionService) {
-        this.sparkSession = sparkSession;
+    public YoutubeProcessingService(YoutubeChannelService youtubeChannelService, YoutubeVideoService youtubeVideoService, YoutubeCommentService youtubeCommentService, YoutubeCaptionService youtubeCaptionService) {
         this.youtubeChannelService = youtubeChannelService;
         this.youtubeVideoService = youtubeVideoService;
         this.youtubeCommentService = youtubeCommentService;
@@ -31,64 +32,54 @@ public class YoutubeProcessingService implements SocialMediaParquetProcessor {
     }
 
     @Override
-    public void processParquet(String pathToParquetFile) {
-        Dataset<Row> dataset = sparkSession.read().parquet(pathToParquetFile);
-        dataset.foreach(row -> {
+    public void processBigQueryResult(TableResult tableResult) {
+        //TODO: create ProcessedFile with unique id not to process same bigQuery again and again
+        //TODO: If there is an issue "You cannot extract without schema: watch realization in telegram and how subSchema created and applied
+        tableResult.iterateAll().forEach(row -> {
             YoutubeChannel channel = new YoutubeChannel();
-            channel.setId(row.getAs("channel_id"));
-            channel.setYoutubeChannelId(row.getAs("youtube_channel_id"));
-            channel.setTitle(row.getAs("title"));
-            channel.setSubscribersCount(row.getAs("subscribers_count"));
-            List<String> videoIds = row.getList(row.fieldIndex("video_ids"));
+            channel.setYoutubeChannelId(row.get("youtube_channel_id").getStringValue());
+            channel.setTitle(row.get("channel_title").getStringValue());
+            channel.setSubscribersCount(row.get("subscribers_count").getLongValue());
+            String videoIdsJson = row.get("video_ids").getStringValue();
+            List<String> videoIds = new ArrayList<>();
             channel.setVideoIds(videoIds);
-            channel.setInsertionTime(row.getAs("insertion_time"));
-            channel = youtubeChannelService.save(channel);
+            youtubeChannelService.save(channel);
 
             YoutubeVideo video = new YoutubeVideo();
-            video.setId(row.getAs("id"));
-            video.setYoutubeVideoId(row.getAs("youtube_video_id"));
-            video.setTitle(row.getAs("title"));
-            video.setDescription(row.getAs("description"));
-            video.setLikes(row.getAs("likes"));
-            List<String> tags = row.getList(row.fieldIndex("tags"));
+            video.setYoutubeVideoId(row.get("youtube_video_id").getStringValue());
+            video.setTitle(row.get("video_title").getStringValue());
+            video.setDescription(row.get("description").getStringValue());
+            video.setLikes(row.get("likes").getLongValue());
+            List<String> tags = new ArrayList<>();
             video.setTags(tags);
-            video.setPublishedAt(row.getAs("published_at"));
-            video.setInsertionTime(row.getAs("insertion_time"));
             video.setYoutubeChannel(channel);
-            video.setIsProcessed(false);
-            video = youtubeVideoService.save(video);
+            youtubeVideoService.save(video);
 
-            List<Row> commentList = row.getList(row.fieldIndex("comments"));
-            if (commentList != null) {
-                for (Row commentRow : commentList) {
-                    YoutubeComment comment = new YoutubeComment();
-                    comment.setId(commentRow.getAs("id"));
-                    comment.setYoutubeCommentId(commentRow.getAs("youtube_comment_id"));
-                    comment.setYoutubeVideo(video);
-                    comment.setText(commentRow.getAs("text"));
-                    comment.setLikes(commentRow.getAs("likes"));
-                    comment.setAuthorName(commentRow.getAs("author_name"));
-                    comment.setAuthorProfileImageUrl(commentRow.getAs("author_profile_image_url"));
-                    comment.setPublishedAt(commentRow.getAs("published_at"));
-                    comment.setInsertionTime(commentRow.getAs("insertion_time"));
-                    youtubeCommentService.save(comment);
-                }
-            }
-            List<Row> captionList = row.getList(row.fieldIndex("captions"));
-            if (captionList != null) {
-                for (Row captionRow : captionList) {
-                    YoutubeCaption caption = new YoutubeCaption();
-                    caption.setId(captionRow.getAs("id"));
-                    caption.setYoutubeVideo(video);
-                    caption.setLanguage(captionRow.getAs("language"));
-                    caption.setContent(captionRow.getAs("content"));
-                    caption.setInsertionTime(captionRow.getAs("insertion_time"));
-                    youtubeCaptionService.save(caption);
-                }
-            }
+            List<FieldValue> commentValues = row.get("comments").getRepeatedValue();
+            commentValues.forEach(commentValue -> {
+                FieldValueList commentRow = commentValue.getRecordValue();
+                YoutubeComment comment = new YoutubeComment();
+                comment.setYoutubeCommentId(commentRow.get("youtube_comment_id").getStringValue());
+                comment.setText(commentRow.get("text").getStringValue());
+                comment.setLikes(commentRow.get("likes").getLongValue());
+                comment.setAuthorName(commentRow.get("author_name").getStringValue());
+                comment.setYoutubeVideo(video);
+                youtubeCommentService.save(comment);
+            });
 
+            List<FieldValue> captionValues = row.get("captions").getRepeatedValue();
+            captionValues.forEach(captionValue -> {
+                FieldValueList captionRow = captionValue.getRecordValue();
+                YoutubeCaption caption = new YoutubeCaption();
+                caption.setLanguage(captionRow.get("language").getStringValue());
+                caption.setContent(captionRow.get("content").getStringValue());
+                caption.setYoutubeVideo(video);
+                youtubeCaptionService.save(caption);
+            });
         });
     }
+
+
     public void doAnalyse(YoutubeVideo youtubeVideo) {
         //TODO: starting impl of algorithms
     }
