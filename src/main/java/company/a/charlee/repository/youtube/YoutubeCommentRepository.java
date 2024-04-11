@@ -17,4 +17,6 @@ public interface YoutubeCommentRepository extends JpaRepository<YoutubeComment, 
 
     @Query("SELECT yc.authorName, COUNT(yc) FROM YoutubeComment yc GROUP BY yc.authorName ORDER BY COUNT(yc) DESC")
     List<Object[]> findTopCommenters(Pageable pageable);
+
+    YoutubeComment findByYoutubeCommentId(String commentId);
 }

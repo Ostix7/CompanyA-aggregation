@@ -33,4 +33,8 @@ public class YoutubeVideoService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    YoutubeVideo findByYoutubeVideoId(String id) {
+        return repository.findByYoutubeVideoId(id);
+    }
 }

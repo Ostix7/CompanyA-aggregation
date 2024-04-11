@@ -12,6 +12,7 @@ import java.util.List;
 @Repository
 public interface YoutubeVideoRepository extends JpaRepository<YoutubeVideo, Long> {
     List<YoutubeVideo> findByIsProcessedFalse();
+    YoutubeVideo findByYoutubeVideoId(String id);
 //    @Query("SELECT yv.youtubeVideoId, SUM(yv.likes) FROM YoutubeVideo yv GROUP BY yv.youtubeVideoId ORDER BY SUM(yv.likes) DESC")
 //    List<Object[]> findMostLikedVideos(Pageable pageable);
 //

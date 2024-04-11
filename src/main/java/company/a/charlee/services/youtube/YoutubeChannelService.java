@@ -34,4 +34,7 @@ public class YoutubeChannelService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+    YoutubeChannel findByChannelId(String id) {
+        return repository.findByYoutubeChannelId(id);
+    }
 }

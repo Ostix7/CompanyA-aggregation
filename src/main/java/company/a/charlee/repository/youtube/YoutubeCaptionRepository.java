@@ -16,4 +16,7 @@ public interface YoutubeCaptionRepository extends JpaRepository<YoutubeCaption, 
     @Query("SELECT yc.language, COUNT(yc) FROM YoutubeCaption yc GROUP BY yc.language ORDER BY COUNT(yc) DESC")
     List<Object[]> countCaptionsByLanguage();
 
+    YoutubeCaption findById(String id);
+
+    YoutubeCaption findByYoutubeVideoId(String id);
 }

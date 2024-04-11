@@ -33,4 +33,7 @@ public class YoutubeCaptionService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+    public YoutubeCaption findByYoutubeVideoId(String id){
+        return repository.findByYoutubeVideoId(id);
+    }
 }
