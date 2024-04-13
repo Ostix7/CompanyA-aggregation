@@ -51,3 +51,9 @@ CREATE TABLE social_data.youtube_captions (
                                                       REFERENCES social_data.youtube_videos(youtube_video_id)
                                                       ON DELETE CASCADE
 );
+
+ALTER TABLE youtube_comments
+    ALTER COLUMN text TYPE TEXT;
+
+ALTER TABLE youtube_captions
+    ALTER COLUMN content TYPE TEXT;

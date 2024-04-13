@@ -33,4 +33,7 @@ public class YoutubeCommentService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+    public YoutubeComment findByCommentId(String commentId) {
+        return repository.findByYoutubeCommentId(commentId);
+    }
 }
