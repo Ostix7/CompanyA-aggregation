@@ -154,7 +154,7 @@ public class TelegramProcessingService implements SocialMediaParquetProcessor {
         DetectedLanguage language = languageDetector.detectLanguage(postText);
         List<String> tokens = tokenizer.tokenize(postText, language);
         performTopicModeling(telegramPost, tokens, language);
-        analyzer.analysePost(telegramPost, tokens, language);
+        analyzer.analyseEntity(telegramPost, tokens, language);
     }
 
     private void performTopicModeling(TelegramPost telegramPost, List<String> tokens, DetectedLanguage language) {

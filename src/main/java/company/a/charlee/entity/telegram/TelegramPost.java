@@ -2,6 +2,7 @@ package company.a.charlee.entity.telegram;
 
 import javax.persistence.*;
 
+import company.a.charlee.entity.generic.SentimentValuedEntity;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,7 +12,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-public class TelegramPost {
+public class TelegramPost extends SentimentValuedEntity {
     @Id
     private String id;
     private Long schemaVersion;
@@ -34,9 +35,6 @@ public class TelegramPost {
     @CollectionTable(name = "telegram_post_topics")
     @Column(name = "topic_modeling")
     private List<String> topics;
-
-    @Column(name = "sentiment_value")
-    private Double sentimentValue;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<TelegramMedia> media;
