@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.List;
+
 @Entity
 @Table(name = "youtube_captions")
 @Getter
@@ -23,4 +25,10 @@ public class YoutubeCaption extends SentimentValuedEntity {
 
     @Column(name = "insertion_time")
     private Long insertionTime;
+
+    @ElementCollection
+    @CollectionTable(name = "youtube_caption_topics")
+    @Column(name = "topic_modeling")
+    private List<String> topics;
+
 }

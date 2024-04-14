@@ -28,6 +28,11 @@ public class YoutubeVideo extends SentimentValuedEntity {
     @Column(name = "tag")
     private List<String> tags = new ArrayList<>();
 
+    @ElementCollection
+    @CollectionTable(name = "youtube_video_topics")
+    @Column(name = "topic_modeling")
+    private List<String> topics;
+
     @OneToMany(mappedBy = "youtubeVideo", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<YoutubeCaption> captions = new ArrayList<>();
 
