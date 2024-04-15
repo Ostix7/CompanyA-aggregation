@@ -72,3 +72,5 @@ CREATE TABLE social_data.telegram_reactions (
 ALTER TABLE telegram_media ALTER COLUMN media_id TYPE character varying;
 
 ALTER TABLE telegram_comment ALTER COLUMN full_text TYPE TEXT;
+
+ALTER TABLE telegram_post ALTER COLUMN post_date TYPE TIMESTAMP USING post_date::TIMESTAMP;

@@ -85,7 +85,9 @@ public class YoutubeProcessingService implements SocialMediaParquetProcessor {
         processedFile.setBigQueryId(videoRow.get("id").getStringValue());
         processedFile.setIsProcessed(true);
         processedFile.setMediaType("youtube");
-        processedFileRepository.save(processedFile);
+        if(!processedFileRepository.findByBigQueryId(videoRow.get("id").getStringValue()).isPresent()){
+            processedFileRepository.save(processedFile);
+        }
     }
     private void processChannels(FieldValueList channelRow) {
         String channelId = channelRow.get("youtube_channel_id").getStringValue();
@@ -109,7 +111,9 @@ public class YoutubeProcessingService implements SocialMediaParquetProcessor {
         processedFile.setBigQueryId(channelRow.get("id").getStringValue());
         processedFile.setIsProcessed(true);
         processedFile.setMediaType("youtube");
-        processedFileRepository.save(processedFile);
+        if(!processedFileRepository.findByBigQueryId(channelRow.get("id").getStringValue()).isPresent()){
+            processedFileRepository.save(processedFile);
+        }
     }
     private void processComments(FieldValueList commentRow) {
 
@@ -142,7 +146,9 @@ public class YoutubeProcessingService implements SocialMediaParquetProcessor {
         processedFile.setIsProcessed(true);
 
         processedFile.setMediaType("youtube");
-        processedFileRepository.save(processedFile);
+        if(!processedFileRepository.findByBigQueryId(commentRow.get("id").getStringValue()).isPresent()){
+            processedFileRepository.save(processedFile);
+        }
     }
 
     private void processCaptions(FieldValueList captionRow) {
@@ -165,7 +171,9 @@ public class YoutubeProcessingService implements SocialMediaParquetProcessor {
         processedFile.setBigQueryId(caption.getId());
         processedFile.setIsProcessed(true);
         processedFile.setMediaType("youtube");
-        processedFileRepository.save(processedFile);
+        if(!processedFileRepository.findByBigQueryId(caption.getId()).isPresent()){
+            processedFileRepository.save(processedFile);
+        }
     }
 
 

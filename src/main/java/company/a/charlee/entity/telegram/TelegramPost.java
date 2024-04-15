@@ -6,6 +6,7 @@ import company.a.charlee.entity.generic.SentimentValuedEntity;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class TelegramPost extends SentimentValuedEntity {
     private TelegramChannel channel;
 
     private Long telegramPostId;
-    private String postDate;
+    private Instant postDate;
     private Long postTs;
     private java.time.Instant updatedAt;
     private String lang;

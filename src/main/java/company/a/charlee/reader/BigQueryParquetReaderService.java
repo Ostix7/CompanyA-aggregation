@@ -38,24 +38,25 @@ public class BigQueryParquetReaderService {
 
     private void checkAndProcessNewFiles(String mediaType) throws InterruptedException {
         if (mediaType.equals("telegram")) {
-            String queryString = "SELECT * FROM `team-bravo-telegram-export.telegram.posts` WHERE post_date BETWEEN '2022-04-07' AND '2024-04-15'";
-            QueryJobConfiguration queryConfig = QueryJobConfiguration.newBuilder(queryString).setUseLegacySql(false).build();
-            TableResult result = bigQueryForTelegram.query(queryConfig);
-
-            result.iterateAll().forEach(row -> {
-                String fileName = row.get("id").getStringValue();
-                Optional<ProcessedFile> existingFile = processedFileRepository.findByBigQueryId(fileName);
-                if (!existingFile.isPresent() || Boolean.FALSE.equals(existingFile.get().getIsProcessed())) {
-                    telegramProcessor.processBigQueryResult(result);
-                }
-            });
+//            String queryString = "SELECT * FROM `team-bravo-telegram-export.telegram.posts` WHERE post_date BETWEEN '2022-04-07' AND '2024-04-15'";
+//            QueryJobConfiguration queryConfig = QueryJobConfiguration.newBuilder(queryString).setUseLegacySql(false).build();
+//            TableResult result = bigQueryForTelegram.query(queryConfig);
+//
+//            result.iterateAll().forEach(row -> {
+//                String fileName = row.get("id").getStringValue();
+//                Optional<ProcessedFile> existingFile = processedFileRepository.findByBigQueryId(fileName);
+//                if (!existingFile.isPresent() || Boolean.FALSE.equals(existingFile.get().getIsProcessed())) {
+//                    telegramProcessor.processBigQueryResult(result);
+//                }
+//            });
         }
-//        else {
-//            processQueryForYouTube("SELECT * FROM `youtube-fetcher-418222.youtube.caption`");
+        else {
 //            processQueryForYouTube("SELECT * FROM `youtube-fetcher-418222.youtube.channel`");
-//            processQueryForYouTube("SELECT * FROM `youtube-fetcher-418222.youtube.comment`");
 //            processQueryForYouTube("SELECT * FROM `youtube-fetcher-418222.youtube.video`");
-//        }
+//            processQueryForYouTube("SELECT * FROM `youtube-fetcher-418222.youtube.comment`");
+//            processQueryForYouTube("SELECT * FROM `youtube-fetcher-418222.youtube.caption`");
+
+        }
     }
     private void processQueryForYouTube(String queryString) throws InterruptedException {
         QueryJobConfiguration queryConfig = QueryJobConfiguration.newBuilder(queryString).setUseLegacySql(false).build();

@@ -4,13 +4,16 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 @Entity
 @Table(name = "youtube_videos")
 @Getter
 @Setter
-public class YoutubeVideo extends SentimentValuedEntity {
+public class YoutubeVideo extends SentimentValuedEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     @Id
     private String id;
 

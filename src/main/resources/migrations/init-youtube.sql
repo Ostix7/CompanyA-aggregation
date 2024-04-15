@@ -71,3 +71,6 @@ ALTER TABLE youtube_comments
 
 ALTER TABLE youtube_captions
     ALTER COLUMN content TYPE TEXT;
+
+ALTER TABLE youtube_videos
+    ALTER COLUMN description TYPE TEXT;
