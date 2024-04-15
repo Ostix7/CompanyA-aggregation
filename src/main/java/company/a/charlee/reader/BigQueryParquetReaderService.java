@@ -38,7 +38,7 @@ public class BigQueryParquetReaderService {
 
     private void checkAndProcessNewFiles(String mediaType) throws InterruptedException {
         if (mediaType.equals("telegram")) {
-            String queryString = "SELECT * FROM `team-bravo-telegram-export.telegram.mocks` WHERE post_date BETWEEN '2022-04-07' AND '2024-04-07'";
+            String queryString = "SELECT * FROM `team-bravo-telegram-export.telegram.posts` WHERE post_date BETWEEN '2022-04-07' AND '2024-04-15'";
             QueryJobConfiguration queryConfig = QueryJobConfiguration.newBuilder(queryString).setUseLegacySql(false).build();
             TableResult result = bigQueryForTelegram.query(queryConfig);
 
@@ -50,12 +50,12 @@ public class BigQueryParquetReaderService {
                 }
             });
         }
-        else {
-            processQueryForYouTube("SELECT * FROM `youtube-fetcher-418222.youtube.caption`");
-            processQueryForYouTube("SELECT * FROM `youtube-fetcher-418222.youtube.channel`");
-            processQueryForYouTube("SELECT * FROM `youtube-fetcher-418222.youtube.comment`");
-            processQueryForYouTube("SELECT * FROM `youtube-fetcher-418222.youtube.video`");
-        }
+//        else {
+//            processQueryForYouTube("SELECT * FROM `youtube-fetcher-418222.youtube.caption`");
+//            processQueryForYouTube("SELECT * FROM `youtube-fetcher-418222.youtube.channel`");
+//            processQueryForYouTube("SELECT * FROM `youtube-fetcher-418222.youtube.comment`");
+//            processQueryForYouTube("SELECT * FROM `youtube-fetcher-418222.youtube.video`");
+//        }
     }
     private void processQueryForYouTube(String queryString) throws InterruptedException {
         QueryJobConfiguration queryConfig = QueryJobConfiguration.newBuilder(queryString).setUseLegacySql(false).build();

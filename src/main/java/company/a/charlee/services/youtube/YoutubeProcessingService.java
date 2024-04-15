@@ -78,6 +78,8 @@ public class YoutubeProcessingService implements SocialMediaParquetProcessor {
         youtubeVideoService.save(video);
         ProcessedFile processedFile = new ProcessedFile();
         processedFile.setBigQueryId(videoRow.get("id").getStringValue());
+        processedFile.setIsProcessed(true);
+        processedFile.setMediaType("youtube");
         processedFileRepository.save(processedFile);
     }
     private void processChannels(FieldValueList channelRow) {
@@ -100,6 +102,8 @@ public class YoutubeProcessingService implements SocialMediaParquetProcessor {
         youtubeChannelService.save(channel);
         ProcessedFile processedFile = new ProcessedFile();
         processedFile.setBigQueryId(channelRow.get("id").getStringValue());
+        processedFile.setIsProcessed(true);
+        processedFile.setMediaType("youtube");
         processedFileRepository.save(processedFile);
     }
     private void processComments(FieldValueList commentRow) {
@@ -130,6 +134,9 @@ public class YoutubeProcessingService implements SocialMediaParquetProcessor {
         youtubeCommentService.save(comment);
         ProcessedFile processedFile = new ProcessedFile();
         processedFile.setBigQueryId(commentRow.get("id").getStringValue());
+        processedFile.setIsProcessed(true);
+
+        processedFile.setMediaType("youtube");
         processedFileRepository.save(processedFile);
     }
 
@@ -151,6 +158,8 @@ public class YoutubeProcessingService implements SocialMediaParquetProcessor {
         youtubeCaptionService.save(caption);
         ProcessedFile processedFile = new ProcessedFile();
         processedFile.setBigQueryId(caption.getId());
+        processedFile.setIsProcessed(true);
+        processedFile.setMediaType("youtube");
         processedFileRepository.save(processedFile);
     }
     public void doAnalyse(YoutubeVideo youtubeVideo) {

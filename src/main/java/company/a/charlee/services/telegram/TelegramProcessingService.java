@@ -23,6 +23,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,16 +46,21 @@ public class TelegramProcessingService implements SocialMediaParquetProcessor {
 
     @Override
     public void processBigQueryResult(TableResult result) {
-        ProcessedFile processedFile = new ProcessedFile();
         result.iterateAll().forEach(row -> {
             FieldList mediaSubSchema = result.getSchema().getFields().get("media").getSubFields();
             FieldList commentsSubSchema = result.getSchema().getFields().get("comments").getSubFields();
             FieldList reactionsSubSchema = result.getSchema().getFields().get("reactions").getSubFields();
-
+            String bigQueryId = row.get("id").getStringValue();
+            Optional<ProcessedFile> existingFile = processedFileRepository.findByBigQueryId(bigQueryId);
+            if (existingFile.isPresent() && Boolean.TRUE.equals(existingFile.get().getIsProcessed())) {
+                return;
+            }
+            ProcessedFile processedFile = existingFile.orElse(new ProcessedFile());
 
             TelegramChannel channel = new TelegramChannel();
             channel.setChannelId(row.get("channel_id").getLongValue());
             channel.setChannelTitle(row.get("channel_title").getStringValue());
+
 
             TelegramPost post = new TelegramPost();
             processedFile.setBigQueryId(row.get("id").getStringValue());

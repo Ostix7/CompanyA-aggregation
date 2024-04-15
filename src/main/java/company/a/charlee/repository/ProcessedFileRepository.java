@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
-public interface ProcessedFileRepository extends JpaRepository<ProcessedFile, String> {
+public interface ProcessedFileRepository extends JpaRepository<ProcessedFile, Long> {
     Optional<ProcessedFile> findByBigQueryId(String bigQueryId);
 
     @Transactional
