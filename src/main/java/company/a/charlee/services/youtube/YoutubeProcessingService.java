@@ -10,9 +10,18 @@ import company.a.charlee.entity.youtube.YoutubeVideo;
 import company.a.charlee.repository.ProcessedFileRepository;
 import company.a.charlee.services.SocialMediaParquetProcessor;
 
+import company.a.charlee.services.sentimentAnalysis.SentimentAnalyzer;
+import company.a.charlee.services.topicmodeling.TopicModelingService;
+import company.a.charlee.utils.DetectedLanguage;
+import company.a.charlee.utils.MultiLanguageDetector;
+import company.a.charlee.utils.MultiLanguageTokenizer;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
+@RequiredArgsConstructor
 public class YoutubeProcessingService implements SocialMediaParquetProcessor {
 
     private final YoutubeChannelService youtubeChannelService;
@@ -20,15 +29,11 @@ public class YoutubeProcessingService implements SocialMediaParquetProcessor {
     private final YoutubeCommentService youtubeCommentService;
     private final YoutubeCaptionService youtubeCaptionService;
     private final ProcessedFileRepository processedFileRepository;
+    private final SentimentAnalyzer analyzer;
+    private final TopicModelingService topicModelingService;
+    private final MultiLanguageDetector languageDetector;
+    private final MultiLanguageTokenizer tokenizer;
 
-
-    public YoutubeProcessingService(YoutubeChannelService youtubeChannelService, YoutubeVideoService youtubeVideoService, YoutubeCommentService youtubeCommentService, YoutubeCaptionService youtubeCaptionService, ProcessedFileRepository processedFileRepository) {
-        this.youtubeChannelService = youtubeChannelService;
-        this.youtubeVideoService = youtubeVideoService;
-        this.youtubeCommentService = youtubeCommentService;
-        this.youtubeCaptionService = youtubeCaptionService;
-        this.processedFileRepository = processedFileRepository;
-    }
 
     @Override
     public void processBigQueryResult(TableResult tableResult) {
@@ -162,7 +167,33 @@ public class YoutubeProcessingService implements SocialMediaParquetProcessor {
         processedFile.setMediaType("youtube");
         processedFileRepository.save(processedFile);
     }
+
+
     public void doAnalyse(YoutubeVideo youtubeVideo) {
-        //TODO: starting impl of algorithms
+        String videoDescription = youtubeVideo.getDescription();
+        DetectedLanguage language = languageDetector.detectLanguage(videoDescription);
+        List<String> tokens = tokenizer.tokenize(videoDescription, language);
+        performTopicModelingForYoutubeVideo(youtubeVideo, tokens, language);
+        analyzer.analyseEntity(youtubeVideo, tokens, language);
+
+        List<YoutubeCaption> captions = youtubeVideo.getCaptions();
+
+        for(YoutubeCaption caption : captions) {
+            DetectedLanguage lang = DetectedLanguage.getFromString(caption.getLanguage());
+            List<String> captTokens = tokenizer.tokenize(caption.getContent(), lang);
+            performTopicModelingForYoutubeCaption(caption, tokens, language);
+            analyzer.analyseEntity(caption, captTokens, lang);
+        }
     }
+
+    private void performTopicModelingForYoutubeVideo(YoutubeVideo youtubeVideo, List<String> tokens, DetectedLanguage language) {
+        List<String> topics = topicModelingService.findTopics(tokens, language);
+        youtubeVideo.setTopics(topics);
+    }
+
+    private void performTopicModelingForYoutubeCaption(YoutubeCaption youtubeCaption, List<String> tokens, DetectedLanguage language) {
+        List<String> topics = topicModelingService.findTopics(tokens, language);
+        youtubeCaption.setTopics(topics);
+    }
+
 }

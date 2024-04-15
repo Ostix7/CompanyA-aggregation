@@ -1,6 +1,6 @@
 package company.a.charlee.services.sentimentAnalysis;
 
-import company.a.charlee.entity.telegram.TelegramPost;
+import company.a.charlee.entity.generic.SentimentValuedEntity;
 import company.a.charlee.utils.DetectedLanguage;
 import company.a.charlee.utils.LanguageProcessingUtils;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ public class SentimentAnalyzer {
     
     private final Map<String, Integer> ruSentimentBase;
 
-    public void analysePost(TelegramPost post, List<String> tokens, DetectedLanguage lang) {
+    public void analyseEntity(SentimentValuedEntity entity, List<String> tokens, DetectedLanguage lang) {
         if (tokens.isEmpty())
             throw new RuntimeException("Error: cannot tokenize the text of the post");
 
@@ -57,7 +57,7 @@ public class SentimentAnalyzer {
 
         double sentimentValue = (tokens.size() == absentWordsCount) ? 0.0 :
                 1.0 * accumulator / (tokens.size() - absentWordsCount);
-        post.setSentimentValue(sentimentValue);
+        entity.setSentimentValue(sentimentValue);
     }
 
 }

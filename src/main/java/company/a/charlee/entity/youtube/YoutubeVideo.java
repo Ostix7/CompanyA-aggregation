@@ -1,4 +1,5 @@
 package company.a.charlee.entity.youtube;
+import company.a.charlee.entity.generic.SentimentValuedEntity;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,7 +10,7 @@ import java.util.List;
 @Table(name = "youtube_videos")
 @Getter
 @Setter
-public class YoutubeVideo {
+public class YoutubeVideo extends SentimentValuedEntity {
     @Id
     private String id;
 
@@ -26,6 +27,14 @@ public class YoutubeVideo {
     @CollectionTable(name = "video_tags", joinColumns = @JoinColumn(name = "video_id"))
     @Column(name = "tag")
     private List<String> tags = new ArrayList<>();
+
+    @ElementCollection
+    @CollectionTable(name = "youtube_video_topics")
+    @Column(name = "topic_modeling")
+    private List<String> topics;
+
+    @OneToMany(mappedBy = "youtubeVideo", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<YoutubeCaption> captions = new ArrayList<>();
 
     @Column(name = "published_at")
     private Long publishedAt;

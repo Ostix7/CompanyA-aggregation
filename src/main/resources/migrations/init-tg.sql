@@ -17,8 +17,15 @@ CREATE TABLE social_data.telegram_posts (
                                             segment TEXT,
                                             full_text TEXT,
                                             view_count INT,
+                                            sentiment_value DOUBLE PRECISION,
                                             is_processed BOOLEAN DEFAULT FALSE,
                                             FOREIGN KEY (channel_id) REFERENCES social_data.telegram_channels(channel_id)
+);
+
+CREATE TABLE social_data.telegram_post_topics (
+                                            telegram_post_id TEXT NOT NULL,
+                                            topic_modeling CHARACTER VARYING(255),
+                                            FOREIGN KEY (telegram_post_id) REFERENCES social_data.telegram_posts(id)
 );
 
 CREATE TYPE social_data.telegram_media_type AS (

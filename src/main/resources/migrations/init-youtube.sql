@@ -16,12 +16,19 @@ CREATE TABLE social_data.youtube_videos (
                                             tags TEXT[],
                                             published_at BIGINT,
                                             insertion_time BIGINT,
+                                            sentiment_value DOUBLE PRECISION,
                                             channel_id TEXT,
                                             is_processed BOOLEAN DEFAULT FALSE,
                                             CONSTRAINT fk_youtube_channel
                                                 FOREIGN KEY(channel_id)
                                                     REFERENCES social_data.youtube_channels(id)
                                                     ON DELETE SET NULL
+);
+
+CREATE TABLE social_data.youtube_video_topics (
+    youtube_video_id TEXT NOT NULL,
+    topic_modeling CHARACTER VARYING(255),
+    FOREIGN KEY (youtube_video_id) REFERENCES social_data.youtube_videos(id)
 );
 
 CREATE TABLE social_data.youtube_comments (
@@ -46,10 +53,17 @@ CREATE TABLE social_data.youtube_captions (
                                               language TEXT,
                                               content TEXT,
                                               insertion_time BIGINT,
+                                              sentiment_value DOUBLE PRECISION,
                                               CONSTRAINT fk_youtube_video_caption
                                                   FOREIGN KEY(youtube_video_id)
                                                       REFERENCES social_data.youtube_videos(youtube_video_id)
                                                       ON DELETE CASCADE
+);
+
+CREATE TABLE social_data.youtube_caption_topics (
+    youtube_caption_id TEXT NOT NULL,
+    topic_modeling CHARACTER VARYING(255),
+    FOREIGN KEY (youtube_caption_id) REFERENCES social_data.youtube_captions(id)
 );
 
 ALTER TABLE youtube_comments

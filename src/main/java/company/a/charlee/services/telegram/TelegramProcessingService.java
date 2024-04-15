@@ -9,9 +9,9 @@ import company.a.charlee.entity.telegram.*;
 import company.a.charlee.repository.ProcessedFileRepository;
 import company.a.charlee.services.SocialMediaParquetProcessor;
 import company.a.charlee.services.sentimentAnalysis.SentimentAnalyzer;
+import company.a.charlee.services.topicmodeling.TopicModelingService;
 import company.a.charlee.utils.DetectedLanguage;
 import company.a.charlee.utils.MultiLanguageDetector;
-import company.a.charlee.utils.MultiLanguagePOSFilter;
 import company.a.charlee.utils.MultiLanguageTokenizer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,10 +20,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,9 +36,9 @@ public class TelegramProcessingService implements SocialMediaParquetProcessor {
 
     private final TelegramReactionService reactionService;
     private final MultiLanguageTokenizer tokenizer;
-    private final MultiLanguagePOSFilter posFilter;
     private final MultiLanguageDetector languageDetector;
 
+    private final TopicModelingService topicModelingService;
     private final SentimentAnalyzer analyzer;
     private final ProcessedFileRepository processedFileRepository;
 
@@ -155,27 +153,16 @@ public class TelegramProcessingService implements SocialMediaParquetProcessor {
         });
     }
     public void doAnalyse(TelegramPost telegramPost) {
-        //TODO: starting impl of algorithms
         String postText = telegramPost.getFullText();
         DetectedLanguage language = languageDetector.detectLanguage(postText);
         List<String> tokens = tokenizer.tokenize(postText, language);
         performTopicModeling(telegramPost, tokens, language);
-        analyzer.analysePost(telegramPost, tokens, language);
+        analyzer.analyseEntity(telegramPost, tokens, language);
     }
 
     private void performTopicModeling(TelegramPost telegramPost, List<String> tokens, DetectedLanguage language) {
-        List<String> filteredTokens = posFilter.filterSignificantPOS(tokens, language);
-        Map<String, Integer> significantWordOccurrences = new HashMap<>();
-        for (String filteredToken : filteredTokens) {
-            significantWordOccurrences.put(filteredToken, significantWordOccurrences.getOrDefault(filteredToken, 0) + 1);
-        }
-        List<String> topFiveWords = significantWordOccurrences.entrySet()
-                .stream()
-                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
-                .limit(5)
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toList());
-        telegramPost.setTopics(topFiveWords);
+        List<String> topics = topicModelingService.findTopics(tokens, language);
+        telegramPost.setTopics(topics);
     }
 
 }
