@@ -16,6 +16,7 @@ CREATE TABLE social_data.youtube_videos (
                                             tags TEXT[],
                                             published_at BIGINT,
                                             insertion_time BIGINT,
+                                            sentiment_value DOUBLE PRECISION,
                                             channel_id TEXT,
                                             is_processed BOOLEAN DEFAULT FALSE,
                                             CONSTRAINT fk_youtube_channel
@@ -46,6 +47,7 @@ CREATE TABLE social_data.youtube_captions (
                                               language TEXT,
                                               content TEXT,
                                               insertion_time BIGINT,
+                                              sentiment_value DOUBLE PRECISION,
                                               CONSTRAINT fk_youtube_video_caption
                                                   FOREIGN KEY(youtube_video_id)
                                                       REFERENCES social_data.youtube_videos(youtube_video_id)

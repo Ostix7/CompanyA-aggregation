@@ -17,6 +17,7 @@ CREATE TABLE social_data.telegram_posts (
                                             segment TEXT,
                                             full_text TEXT,
                                             view_count INT,
+                                            sentiment_value DOUBLE PRECISION,
                                             is_processed BOOLEAN DEFAULT FALSE,
                                             FOREIGN KEY (channel_id) REFERENCES social_data.telegram_channels(channel_id)
 );
