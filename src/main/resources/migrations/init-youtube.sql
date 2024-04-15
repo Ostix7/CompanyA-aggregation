@@ -25,6 +25,12 @@ CREATE TABLE social_data.youtube_videos (
                                                     ON DELETE SET NULL
 );
 
+CREATE TABLE social_data.youtube_video_topics (
+    youtube_video_id TEXT NOT NULL,
+    topic_modeling CHARACTER VARYING(255),
+    FOREIGN KEY (youtube_video_id) REFERENCES social_data.youtube_videos(id)
+);
+
 CREATE TABLE social_data.youtube_comments (
                                               id TEXT PRIMARY KEY,
                                               youtube_comment_id TEXT,
@@ -52,6 +58,12 @@ CREATE TABLE social_data.youtube_captions (
                                                   FOREIGN KEY(youtube_video_id)
                                                       REFERENCES social_data.youtube_videos(youtube_video_id)
                                                       ON DELETE CASCADE
+);
+
+CREATE TABLE social_data.youtube_caption_topics (
+    youtube_caption_id TEXT NOT NULL,
+    topic_modeling CHARACTER VARYING(255),
+    FOREIGN KEY (youtube_caption_id) REFERENCES social_data.youtube_captions(id)
 );
 
 ALTER TABLE youtube_comments
