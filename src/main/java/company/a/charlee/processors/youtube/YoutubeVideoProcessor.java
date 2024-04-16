@@ -19,14 +19,14 @@ public class YoutubeVideoProcessor {
         this.youtubeVideoRepository = youtubeVideoRepository;
         this.youtubeProcessingService = youtubeProcessingService;
     }
-//
-//    @Scheduled(fixedRate = 600000, initialDelay = 300000)
-//    public void processUnprocessedVideos() {
-//        List<YoutubeVideo> unprocessedVideos = youtubeVideoRepository.findByIsProcessedFalse();
-//        for (YoutubeVideo video : unprocessedVideos) {
-//            youtubeProcessingService.doAnalyse(video);
-//            video.setIsProcessed(true);
-//            youtubeVideoRepository.save(video);
-//        }
-//    }
+
+    @Scheduled(fixedRate = 600000, initialDelay = 300000)
+    public void processUnprocessedVideos() {
+        List<YoutubeVideo> unprocessedVideos = youtubeVideoRepository.findByIsProcessedFalse();
+        for (YoutubeVideo video : unprocessedVideos) {
+            youtubeProcessingService.doAnalyse(video);
+            video.setIsProcessed(true);
+            youtubeVideoRepository.save(video);
+        }
+    }
 }
