@@ -178,25 +178,13 @@ public class YoutubeProcessingService implements SocialMediaParquetProcessor {
 
 
     public void doAnalyse(YoutubeVideo youtubeVideo) {
-        String videoDescription = youtubeVideo.getDescription();
-        DetectedLanguage language = languageDetector.detectLanguage(videoDescription);
-        List<String> tokens = tokenizer.tokenize(videoDescription, language);
-        performTopicModelingForYoutubeVideo(youtubeVideo, tokens, language);
-        analyzer.analyseEntity(youtubeVideo, tokens, language);
-
         List<YoutubeCaption> captions = youtubeVideo.getCaptions();
-
         for(YoutubeCaption caption : captions) {
-            DetectedLanguage lang = DetectedLanguage.getFromString(caption.getLanguage());
+            DetectedLanguage lang = languageDetector.detectLanguage(caption.getContent(), caption.getLanguage());
             List<String> captTokens = tokenizer.tokenize(caption.getContent(), lang);
-            performTopicModelingForYoutubeCaption(caption, tokens, language);
+            performTopicModelingForYoutubeCaption(caption, captTokens, lang);
             analyzer.analyseEntity(caption, captTokens, lang);
         }
-    }
-
-    private void performTopicModelingForYoutubeVideo(YoutubeVideo youtubeVideo, List<String> tokens, DetectedLanguage language) {
-        List<String> topics = topicModelingService.findTopics(tokens, language);
-        youtubeVideo.setTopics(topics);
     }
 
     private void performTopicModelingForYoutubeCaption(YoutubeCaption youtubeCaption, List<String> tokens, DetectedLanguage language) {

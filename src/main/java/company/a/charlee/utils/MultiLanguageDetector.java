@@ -11,22 +11,12 @@ public class MultiLanguageDetector {
         this.languageDetector = languageDetector;
     }
 
-    public DetectedLanguage detectLanguage(String text) {
+    public DetectedLanguage detectLanguage(String text, String backupLang) {
+        String backup = backupLang != null ? backupLang : "";
         Language lang = languageDetector.predictLanguage(text);
-        DetectedLanguage language;
-        switch (lang.getLang()) {
-            case "eng":
-                language = DetectedLanguage.ENGLISH;
-                break;
-            case "ukr":
-                language = DetectedLanguage.UKRAINIAN;
-                break;
-            case "rus":
-                language = DetectedLanguage.RUSSIAN;
-                break;
-            default:
-                language = DetectedLanguage.UNSUPPORTED;
-                break;
+        DetectedLanguage language = DetectedLanguage.getFromString(lang.getLang());
+        if (language == DetectedLanguage.UNSUPPORTED) {
+            language = DetectedLanguage.getFromString(backup);
         }
         return language;
     }

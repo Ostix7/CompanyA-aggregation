@@ -16,19 +16,12 @@ CREATE TABLE social_data.youtube_videos (
                                             tags TEXT[],
                                             published_at BIGINT,
                                             insertion_time BIGINT,
-                                            sentiment_value DOUBLE PRECISION,
                                             channel_id TEXT,
                                             is_processed BOOLEAN DEFAULT FALSE,
                                             CONSTRAINT fk_youtube_channel
                                                 FOREIGN KEY(channel_id)
                                                     REFERENCES social_data.youtube_channels(id)
                                                     ON DELETE SET NULL
-);
-
-CREATE TABLE social_data.youtube_video_topics (
-    youtube_video_id TEXT NOT NULL,
-    topic_modeling CHARACTER VARYING(255),
-    FOREIGN KEY (youtube_video_id) REFERENCES social_data.youtube_videos(id)
 );
 
 CREATE TABLE social_data.youtube_comments (
