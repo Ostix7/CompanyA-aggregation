@@ -74,13 +74,13 @@ public class BigQueryParquetReaderService {
         });
     }
 
-    @Scheduled(fixedDelay = 3600000)
-    public void scheduledCheckForTelegramFiles() throws InterruptedException {
-        checkAndProcessNewFiles("telegram");
-    }
+//    @Scheduled(fixedDelay = 3600000)
+//    public void scheduledCheckForTelegramFiles() throws InterruptedException {
+//        checkAndProcessNewFiles("telegram");
+//    }
 
-    @Scheduled(fixedDelay = 3600000)
-    public void scheduledCheckForYoutubeFiles() throws InterruptedException {
-        checkAndProcessNewFiles("youtube");
-    }
+//    @Scheduled(fixedDelay = 3600000)
+//    public void scheduledCheckForYoutubeFiles() throws InterruptedException {
+//        checkAndProcessNewFiles("youtube");
+//    }
 }
