@@ -27,7 +27,7 @@ jobs:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY }}
           aws_secret_key: ${{ secrets.AWS_SECRET_KEY }}
           region: 'eu-central-1'
-          application_name: 'aggreagation-A'
-          environment_name: 'Aggreagation-A-env'
+          application_name: 'aggregation'
+          environment_name: 'Aggregation-env-6'
           version_label: "${{ github.run_number }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.event.push.timestamp }}"
           deployment_package: target/charlee-0.0.1-SNAPSHOT.jar
