@@ -83,7 +83,11 @@ public class YoutubeProcessingService implements SocialMediaParquetProcessor {
         youtubeVideoService.save(video);
         ProcessedFile processedFile = new ProcessedFile();
         processedFile.setBigQueryId(videoRow.get("id").getStringValue());
-        processedFileRepository.save(processedFile);
+        processedFile.setIsProcessed(true);
+        processedFile.setMediaType("youtube");
+        if(!processedFileRepository.findByBigQueryId(videoRow.get("id").getStringValue()).isPresent()){
+            processedFileRepository.save(processedFile);
+        }
     }
     private void processChannels(FieldValueList channelRow) {
         String channelId = channelRow.get("youtube_channel_id").getStringValue();
@@ -105,7 +109,11 @@ public class YoutubeProcessingService implements SocialMediaParquetProcessor {
         youtubeChannelService.save(channel);
         ProcessedFile processedFile = new ProcessedFile();
         processedFile.setBigQueryId(channelRow.get("id").getStringValue());
-        processedFileRepository.save(processedFile);
+        processedFile.setIsProcessed(true);
+        processedFile.setMediaType("youtube");
+        if(!processedFileRepository.findByBigQueryId(channelRow.get("id").getStringValue()).isPresent()){
+            processedFileRepository.save(processedFile);
+        }
     }
     private void processComments(FieldValueList commentRow) {
 
@@ -135,7 +143,12 @@ public class YoutubeProcessingService implements SocialMediaParquetProcessor {
         youtubeCommentService.save(comment);
         ProcessedFile processedFile = new ProcessedFile();
         processedFile.setBigQueryId(commentRow.get("id").getStringValue());
-        processedFileRepository.save(processedFile);
+        processedFile.setIsProcessed(true);
+
+        processedFile.setMediaType("youtube");
+        if(!processedFileRepository.findByBigQueryId(commentRow.get("id").getStringValue()).isPresent()){
+            processedFileRepository.save(processedFile);
+        }
     }
 
     private void processCaptions(FieldValueList captionRow) {
@@ -156,30 +169,22 @@ public class YoutubeProcessingService implements SocialMediaParquetProcessor {
         youtubeCaptionService.save(caption);
         ProcessedFile processedFile = new ProcessedFile();
         processedFile.setBigQueryId(caption.getId());
-        processedFileRepository.save(processedFile);
+        processedFile.setIsProcessed(true);
+        processedFile.setMediaType("youtube");
+        if(!processedFileRepository.findByBigQueryId(caption.getId()).isPresent()){
+            processedFileRepository.save(processedFile);
+        }
     }
 
 
     public void doAnalyse(YoutubeVideo youtubeVideo) {
-        String videoDescription = youtubeVideo.getDescription();
-        DetectedLanguage language = languageDetector.detectLanguage(videoDescription);
-        List<String> tokens = tokenizer.tokenize(videoDescription, language);
-        performTopicModelingForYoutubeVideo(youtubeVideo, tokens, language);
-        analyzer.analyseEntity(youtubeVideo, tokens, language);
-
         List<YoutubeCaption> captions = youtubeVideo.getCaptions();
-
         for(YoutubeCaption caption : captions) {
-            DetectedLanguage lang = DetectedLanguage.getFromString(caption.getLanguage());
+            DetectedLanguage lang = languageDetector.detectLanguage(caption.getContent(), caption.getLanguage());
             List<String> captTokens = tokenizer.tokenize(caption.getContent(), lang);
-            performTopicModelingForYoutubeCaption(caption, tokens, language);
+            performTopicModelingForYoutubeCaption(caption, captTokens, lang);
             analyzer.analyseEntity(caption, captTokens, lang);
         }
-    }
-
-    private void performTopicModelingForYoutubeVideo(YoutubeVideo youtubeVideo, List<String> tokens, DetectedLanguage language) {
-        List<String> topics = topicModelingService.findTopics(tokens, language);
-        youtubeVideo.setTopics(topics);
     }
 
     private void performTopicModelingForYoutubeCaption(YoutubeCaption youtubeCaption, List<String> tokens, DetectedLanguage language) {

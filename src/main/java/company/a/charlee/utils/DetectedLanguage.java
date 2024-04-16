@@ -6,9 +6,9 @@ public enum DetectedLanguage {
     public static DetectedLanguage getFromString(String lang) {
         if (lang.equals("english") || lang.equals("en") || lang.equals("eng"))
             return ENGLISH;
-        if (lang.equals("ukrainian") || lang.equals("ua") || lang.equals("ukr"))
+        if (lang.equals("ukrainian") || lang.equals("ua") || lang.equals("ukr") || lang.equals("uk"))
             return UKRAINIAN;
-        if (lang.equals("russian") || lang.equals("ru") || lang.equals("rus"))
+        if (lang.equals("russian") || lang.equals("ru") || lang.equals("rus") || lang.equals("katsap"))
             return RUSSIAN;
         return UNSUPPORTED;
     }

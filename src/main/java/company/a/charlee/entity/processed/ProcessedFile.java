@@ -15,7 +15,7 @@ public class ProcessedFile {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
+    private Integer id;
     
     private String bigQueryId;
     private String mediaType;

@@ -17,10 +17,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -42,28 +46,37 @@ public class TelegramProcessingService implements SocialMediaParquetProcessor {
 
     @Override
     public void processBigQueryResult(TableResult result) {
-        ProcessedFile processedFile = new ProcessedFile();
         result.iterateAll().forEach(row -> {
             FieldList mediaSubSchema = result.getSchema().getFields().get("media").getSubFields();
             FieldList commentsSubSchema = result.getSchema().getFields().get("comments").getSubFields();
             FieldList reactionsSubSchema = result.getSchema().getFields().get("reactions").getSubFields();
-
+            String bigQueryId = row.get("id").getStringValue();
+            Optional<ProcessedFile> existingFile = processedFileRepository.findByBigQueryId(bigQueryId);
+            if (existingFile.isPresent() && Boolean.TRUE.equals(existingFile.get().getIsProcessed())) {
+                return;
+            }
+            ProcessedFile processedFile = existingFile.orElse(new ProcessedFile());
 
             TelegramChannel channel = new TelegramChannel();
             channel.setChannelId(row.get("channel_id").getLongValue());
             channel.setChannelTitle(row.get("channel_title").getStringValue());
+
 
             TelegramPost post = new TelegramPost();
             processedFile.setBigQueryId(row.get("id").getStringValue());
             post.setId(row.get("id").getStringValue());
             post.setSchemaVersion(row.get("schema_version").getLongValue());
             post.setTelegramPostId(row.get("telegram_post_id").getLongValue());
-            post.setPostDate(row.get("post_date").getStringValue());
+            String dateString = row.get("post_date").getStringValue();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDate date = LocalDate.parse(dateString, formatter);
+            Instant postDate = date.atStartOfDay().toInstant(ZoneOffset.UTC);
+            post.setPostDate(postDate);
             post.setPostTs(row.get("post_ts").getTimestampValue());
             if (row.get("updated_at") != null && !row.get("updated_at").isNull()) {
                 String updatedAtStr = row.get("updated_at").getStringValue();
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
-                LocalDateTime localDateTime = LocalDateTime.parse(updatedAtStr, formatter);
+                DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
+                LocalDateTime localDateTime = LocalDateTime.parse(updatedAtStr, formatter2);
                 Instant updatedAt = localDateTime.toInstant(ZoneOffset.UTC);
                 post.setUpdatedAt(updatedAt);
             } else {
@@ -147,7 +160,7 @@ public class TelegramProcessingService implements SocialMediaParquetProcessor {
     }
     public void doAnalyse(TelegramPost telegramPost) {
         String postText = telegramPost.getFullText();
-        DetectedLanguage language = languageDetector.detectLanguage(postText);
+        DetectedLanguage language = languageDetector.detectLanguage(postText, telegramPost.getLang());
         List<String> tokens = tokenizer.tokenize(postText, language);
         performTopicModeling(telegramPost, tokens, language);
         analyzer.analyseEntity(telegramPost, tokens, language);

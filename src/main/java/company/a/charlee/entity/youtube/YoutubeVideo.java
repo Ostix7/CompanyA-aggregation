@@ -1,16 +1,19 @@
 package company.a.charlee.entity.youtube;
-import company.a.charlee.entity.generic.SentimentValuedEntity;
+
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 @Entity
 @Table(name = "youtube_videos")
 @Getter
 @Setter
-public class YoutubeVideo extends SentimentValuedEntity {
+public class YoutubeVideo implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     @Id
     private String id;
 
@@ -27,11 +30,6 @@ public class YoutubeVideo extends SentimentValuedEntity {
     @CollectionTable(name = "video_tags", joinColumns = @JoinColumn(name = "video_id"))
     @Column(name = "tag")
     private List<String> tags = new ArrayList<>();
-
-    @ElementCollection
-    @CollectionTable(name = "youtube_video_topics")
-    @Column(name = "topic_modeling")
-    private List<String> topics;
 
     @OneToMany(mappedBy = "youtubeVideo", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<YoutubeCaption> captions = new ArrayList<>();
