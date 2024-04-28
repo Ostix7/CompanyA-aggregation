@@ -78,6 +78,11 @@ public class YoutubeProcessingService implements SocialMediaParquetProcessor {
         if (!videoRow.get("published_at").isNull()) {
             video.setPublishedAt(videoRow.get("published_at").getTimestampValue());
         }
+        if (!videoRow.get("youtube_channel_id").isNull()) {
+            YoutubeChannel youtubeChannel = youtubeChannelService.findByChannelId(videoRow.get("youtube_channel_id").getStringValue());
+            video.setYoutubeChannel(youtubeChannel);
+        }
+
         video.setInsertionTime(System.currentTimeMillis());
 
         youtubeVideoService.save(video);
