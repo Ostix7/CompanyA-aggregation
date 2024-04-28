@@ -123,6 +123,8 @@ public class YoutubeProcessingService implements SocialMediaParquetProcessor {
             comment.setId(commentRow.get("id").getStringValue());
         }
         comment.setYoutubeCommentId(commentRow.get("youtube_comment_id").getStringValue());
+        YoutubeVideo youtubeVideo =youtubeVideoService.findByYoutubeVideoId(commentRow.get("youtube_video_id").getStringValue());
+        comment.setYoutubeVideo(youtubeVideo);
         if (!commentRow.get("text").isNull()) {
             comment.setText(commentRow.get("text").getStringValue());
         }
