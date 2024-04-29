@@ -5,6 +5,7 @@ import company.a.charlee.utils.MultiLanguagePOSFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +19,7 @@ public class TopicModelingService {
 
     public List<String> findTopics(List<String> tokens, DetectedLanguage lang) {
         if (tokens.isEmpty())
-            throw new RuntimeException("Error: cannot tokenize the text of the post");
+            return Collections.emptyList();
         List<String> filteredTokens = posFilter.filterSignificantPOS(tokens, lang);
         Map<String, Integer> significantWordOccurrences = new HashMap<>();
         for (String filteredToken : filteredTokens) {
