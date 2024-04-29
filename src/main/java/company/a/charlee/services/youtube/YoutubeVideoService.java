@@ -1,8 +1,6 @@
 package company.a.charlee.services.youtube;
 
-import company.a.charlee.entity.telegram.TelegramComment;
 import company.a.charlee.entity.youtube.YoutubeVideo;
-import company.a.charlee.repository.telegram.TelegramCommentRepository;
 import company.a.charlee.repository.youtube.YoutubeVideoRepository;
 import org.springframework.stereotype.Service;
 

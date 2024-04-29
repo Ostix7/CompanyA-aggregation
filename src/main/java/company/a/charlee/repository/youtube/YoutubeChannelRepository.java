@@ -1,6 +1,7 @@
 package company.a.charlee.repository.youtube;
 
 import company.a.charlee.entity.telegram.TelegramChannel;
+import company.a.charlee.entity.youtube.YoutubeCaption;
 import company.a.charlee.entity.youtube.YoutubeChannel;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

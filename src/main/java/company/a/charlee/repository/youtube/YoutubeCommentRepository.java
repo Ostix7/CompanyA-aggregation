@@ -5,9 +5,11 @@ import company.a.charlee.entity.youtube.YoutubeComment;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface YoutubeCommentRepository extends JpaRepository<YoutubeComment, Long> {
@@ -19,4 +21,10 @@ public interface YoutubeCommentRepository extends JpaRepository<YoutubeComment, 
     List<Object[]> findTopCommenters(Pageable pageable);
 
     YoutubeComment findByYoutubeCommentId(String commentId);
+
+    @Query("SELECT c FROM YoutubeComment c JOIN c.youtubeVideo v WHERE v.youtubeChannel.id = :channelId")
+    List<YoutubeComment> findByChannelId(@Param("channelId") String channelId);
+
+    @Query("SELECT c FROM YoutubeComment c WHERE c.youtubeVideo.id = :videoId")
+    Optional<List<YoutubeComment>> findByVideoId(@Param("videoId") String videoId);
 }

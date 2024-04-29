@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface YoutubeCaptionRepository extends JpaRepository<YoutubeCaption, Long> {
@@ -19,4 +20,15 @@ public interface YoutubeCaptionRepository extends JpaRepository<YoutubeCaption, 
     YoutubeCaption findById(String id);
 
     YoutubeCaption findByYoutubeVideoId(String id);
+
+    @Query("SELECT c FROM YoutubeCaption c WHERE c.youtubeVideo.id = :videoId")
+    Optional<List<YoutubeCaption>> findByVideoId(@Param("videoId") String videoId);
+
+    @Query("SELECT t, COUNT(DISTINCT c.youtubeVideo) AS videoCount " +
+            "FROM YoutubeCaption c JOIN c.topics t " +
+            "GROUP BY t " +
+            "ORDER BY videoCount DESC")
+    List<Object[]> findMostPopularTopicsByVideoCount();
+
+
 }
