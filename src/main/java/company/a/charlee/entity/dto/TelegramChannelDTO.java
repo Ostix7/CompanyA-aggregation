@@ -5,16 +5,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
-
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CommentsEngagementForPostsDTO {
+public class TelegramChannelDTO {
 
-    private LocalDate postDate;
-
-    private Long totalComments;
+    private String channelTitle;
 
 }

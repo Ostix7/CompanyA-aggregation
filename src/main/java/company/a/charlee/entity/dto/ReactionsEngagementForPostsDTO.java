@@ -15,6 +15,6 @@ public class ReactionsEngagementForPostsDTO {
 
     private LocalDate postDate;
 
-    private Integer totalReactions;
+    private Long totalReactions;
 
 }

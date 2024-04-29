@@ -17,6 +17,6 @@ public class PostTopicModelingOccurrencesDTO {
 
     private String topic;
 
-    private Integer occurrences;
+    private Long occurrences;
 
 }

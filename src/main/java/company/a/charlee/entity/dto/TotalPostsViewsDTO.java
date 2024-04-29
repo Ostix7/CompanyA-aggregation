@@ -11,10 +11,10 @@ import java.time.LocalDate;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CommentsEngagementForPostsDTO {
+public class TotalPostsViewsDTO {
 
     private LocalDate postDate;
 
-    private Long totalComments;
+    private Long totalViews;
 
 }

@@ -1,9 +1,6 @@
 package company.a.charlee.repository.telegram;
 
-import company.a.charlee.entity.dto.AveragePostsSentimentValueDTO;
-import company.a.charlee.entity.dto.CommentsEngagementForPostsDTO;
-import company.a.charlee.entity.dto.PostTopicModelingOccurrencesDTO;
-import company.a.charlee.entity.dto.ReactionsEngagementForPostsDTO;
+import company.a.charlee.entity.dto.*;
 import company.a.charlee.entity.telegram.TelegramPost;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,13 +26,23 @@ public interface TelegramPostRepository extends JpaRepository<TelegramPost, Stri
 //    @Query("SELECT p, COUNT(DISTINCT r.emoji) FROM TelegramPost p JOIN p.reactions r GROUP BY p ORDER BY COUNT(DISTINCT r.emoji) DESC")
 //    List<Object[]> findPostsWithMostDiverseEmojis(Pageable pageable);
 
-    @Query(nativeQuery = true, value =
-            "SELECT CAST(t1.post_date AS date) AS postDate, AVG(t1.sentiment_value) AS sentimentValue\n" +
-            "FROM telegram_post t1 JOIN telegram_channel t2 ON t1.channel_id = t2.channel_id\n" +
-            "WHERE t2.channel_title = :telegramChannelTitle\n" +
-            "GROUP BY CAST(t1.post_date AS date)\n" +
-            "ORDER BY CAST(t1.post_date AS date);\n")
+    @Query(value =
+            "SELECT new company.a.charlee.entity.dto.AveragePostsSentimentValueDTO(CAST(t1.postDate AS java.time.LocalDate), AVG(t1.sentimentValue))\n" +
+            "FROM TelegramPost t1\n" +
+            "WHERE t1.channel.channelTitle = :telegramChannelTitle\n" +
+            "GROUP BY CAST(t1.postDate AS date)\n" +
+            "ORDER BY CAST(t1.postDate AS date)\n")
     List<AveragePostsSentimentValueDTO> getAverageSentimentValuesForChannelPostsByDates(
+            @Param("telegramChannelTitle") String telegramChannelTitle
+    );
+
+    @Query(value =
+            "SELECT new company.a.charlee.entity.dto.TotalPostsViewsDTO(CAST(t1.postDate AS java.time.LocalDate), SUM(t1.viewCount))\n" +
+                    "FROM TelegramPost t1\n" +
+                    "WHERE t1.channel.channelTitle = :telegramChannelTitle\n" +
+                    "GROUP BY CAST(t1.postDate AS date)\n" +
+                    "ORDER BY CAST(t1.postDate AS date), SUM(t1.viewCount) DESC\n")
+    List<TotalPostsViewsDTO> getTotalPostsViewsByDates(
             @Param("telegramChannelTitle") String telegramChannelTitle
     );
 
@@ -55,28 +62,41 @@ public interface TelegramPostRepository extends JpaRepository<TelegramPost, Stri
             ") ranked_words\n" +
             "WHERE rn <= :topicsLimitByDate\n" +
             "ORDER BY post_date, occurrences DESC;\n")
-    List<PostTopicModelingOccurrencesDTO> getPostTopicModelingOccurrencesByDates(
+    List<Object[]> getPostTopicModelingOccurrencesByDates(
             @Param("telegramChannelTitle") String telegramChannelTitle,
             @Param("topicsLimitByDate") Integer topicsLimitByDate
     );
 
-    @Query(nativeQuery = true, value =
-            "SELECT CAST(t2.post_date AS date) AS postDate, COUNT(t1.comment_id) AS totalComments\n" +
-            "FROM telegram_comment t1 JOIN telegram_post t2 ON t1.post_id = t2.id JOIN telegram_channel t3 ON t2.channel_id = t3.channel_id \n" +
-            "WHERE t3.channel_title = :telegramChannelTitle \n" +
-            "GROUP BY CAST(t2.post_date AS date)\n" +
-            "ORDER BY CAST(t2.post_date AS date);\n")
+    @Query(value =
+            "SELECT new company.a.charlee.entity.dto.CommentsEngagementForPostsDTO(CAST(t2.postDate AS java.time.LocalDate), COUNT(t1.commentId))\n" +
+            "FROM TelegramComment t1 JOIN t1.post t2 JOIN t2.channel t3 \n" +
+            "WHERE t3.channelTitle = :telegramChannelTitle \n" +
+            "GROUP BY CAST(t2.postDate AS date)\n" +
+            "ORDER BY CAST(t2.postDate AS date)\n")
     List<CommentsEngagementForPostsDTO> getCommentsEngagementForPostsByDates(
             @Param("telegramChannelTitle") String telegramChannelTitle
     );
 
-    @Query(nativeQuery = true, value =
-            "SELECT CAST(t2.post_date AS date) AS postDate, SUM(t1.count) AS totalReactions\n" +
-            "FROM telegram_reaction t1 JOIN telegram_post t2 ON t1.post_id = t2.id JOIN telegram_channel t3 ON t2.channel_id = t3.channel_id \n" +
-            "WHERE t3.channel_title = :telegramChannelTitle \n" +
-            "GROUP BY CAST(t2.post_date AS date)\n" +
-            "ORDER BY CAST(t2.post_date AS date);\n")
+    @Query(value =
+            "SELECT new company.a.charlee.entity.dto.ReactionsEngagementForPostsDTO(CAST(t2.postDate AS java.time.LocalDate), SUM(t1.count))\n" +
+            "FROM TelegramReaction t1 JOIN t1.post t2 JOIN t2.channel t3 \n" +
+            "WHERE t3.channelTitle = :telegramChannelTitle \n" +
+            "GROUP BY CAST(t2.postDate AS date)\n" +
+            "ORDER BY CAST(t2.postDate AS date)\n")
     List<ReactionsEngagementForPostsDTO> getReactionsEngagementForPostsByDates(
+            @Param("telegramChannelTitle") String telegramChannelTitle
+    );
+
+    @Query(value =
+            "SELECT new company.a.charlee.entity.dto.ChannelPostsQuantityDTO(c.channelTitle, SIZE(c.posts))\n" +
+            "FROM TelegramChannel c")
+    List<ChannelPostsQuantityDTO> getAllChannelPostsQuantity();
+
+    @Query(value =
+            "SELECT new company.a.charlee.entity.dto.ChannelPostsQuantityDTO(c.channelTitle, SIZE(c.posts))\n" +
+            "FROM TelegramChannel c \n" +
+            "WHERE c.channelTitle = :telegramChannelTitle\n")
+    ChannelPostsQuantityDTO getChannelPostsQuantity(
             @Param("telegramChannelTitle") String telegramChannelTitle
     );
 
