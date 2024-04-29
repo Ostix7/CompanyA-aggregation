@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  aggregation_project_postgres_db:
+    image: postgres:latest
+    container_name: aggregation_project_postgres_db
+    environment:
+      POSTGRES_DB: aggregation
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - aggregation_data:/var/lib/postgresql/data
+
+volumes:
+  aggregation_data:
