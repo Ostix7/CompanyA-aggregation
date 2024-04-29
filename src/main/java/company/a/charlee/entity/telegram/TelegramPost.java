@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -48,6 +49,8 @@ public class TelegramPost extends SentimentValuedEntity {
 
     @Column(name = "is_processed")
     private boolean isProcessed;
+
+    private Date fetchedAt;
 
     public void addMedia(TelegramMedia media) {
         if (media != null) {

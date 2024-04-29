@@ -6,6 +6,7 @@ import lombok.Setter;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 @Entity
 @Table(name = "youtube_videos")
@@ -46,6 +47,8 @@ public class YoutubeVideo implements Serializable {
 
     @Column(name = "is_processed")
     private Boolean isProcessed = false;
+
+    private Date fetchedAt;
 
     public void addTag(String tag) {
         this.tags.add(tag);

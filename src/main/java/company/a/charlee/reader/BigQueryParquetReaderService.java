@@ -38,7 +38,7 @@ public class BigQueryParquetReaderService {
 
     private void checkAndProcessNewFiles(String mediaType) throws InterruptedException {
         if (mediaType.equals("telegram")) {
-            String queryString = "SELECT * FROM `team-bravo-telegram-export.telegram.posts` WHERE post_date BETWEEN '2022-04-07' AND '2024-04-15'";
+            String queryString = "SELECT * FROM `team-bravo-telegram-export.telegram.posts` WHERE post_date BETWEEN '2024-04-15' AND '2024-04-30'";
             QueryJobConfiguration queryConfig = QueryJobConfiguration.newBuilder(queryString).setUseLegacySql(false).build();
             TableResult result = bigQueryForTelegram.query(queryConfig);
 

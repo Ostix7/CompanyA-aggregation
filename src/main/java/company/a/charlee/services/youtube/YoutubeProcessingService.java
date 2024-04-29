@@ -18,6 +18,7 @@ import company.a.charlee.utils.MultiLanguageTokenizer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -40,19 +41,19 @@ public class YoutubeProcessingService implements SocialMediaParquetProcessor {
         tableResult.iterateAll().forEach(row -> {
             try {
                 processVideos(row);
-            } catch (IllegalArgumentException ignore) {}
+            } catch (RuntimeException ignore) {}
 
             try {
                 processChannels(row);
-            } catch (IllegalArgumentException ignore) {}
+            } catch (RuntimeException ignore) {}
 
             try {
                 processComments(row);
-            } catch (IllegalArgumentException ignore) {}
+            } catch (RuntimeException ignore) {}
 
             try {
                 processCaptions(row);
-            } catch (IllegalArgumentException ignore) {}
+            } catch (RuntimeException ignore) {}
         });
     }
 
@@ -84,7 +85,7 @@ public class YoutubeProcessingService implements SocialMediaParquetProcessor {
         }
 
         video.setInsertionTime(System.currentTimeMillis());
-
+        video.setFetchedAt(new Date());
         youtubeVideoService.save(video);
         ProcessedFile processedFile = new ProcessedFile();
         processedFile.setBigQueryId(videoRow.get("id").getStringValue());
@@ -185,13 +186,13 @@ public class YoutubeProcessingService implements SocialMediaParquetProcessor {
 
 
     public void doAnalyse(YoutubeVideo youtubeVideo) {
-        List<YoutubeCaption> captions = youtubeVideo.getCaptions();
-        for(YoutubeCaption caption : captions) {
-            DetectedLanguage lang = languageDetector.detectLanguage(caption.getContent(), caption.getLanguage());
-            List<String> captTokens = tokenizer.tokenize(caption.getContent(), lang);
-            performTopicModelingForYoutubeCaption(caption, captTokens, lang);
-            analyzer.analyseEntity(caption, captTokens, lang);
-        }
+//        List<YoutubeCaption> captions = youtubeVideo.getCaptions();
+//        for(YoutubeCaption caption : captions) {
+//            DetectedLanguage lang = languageDetector.detectLanguage(caption.getContent(), caption.getLanguage());
+//            List<String> captTokens = tokenizer.tokenize(caption.getContent(), lang);
+//            performTopicModelingForYoutubeCaption(caption, captTokens, lang);
+//            analyzer.analyseEntity(caption, captTokens, lang);
+//        }
     }
 
     private void performTopicModelingForYoutubeCaption(YoutubeCaption youtubeCaption, List<String> tokens, DetectedLanguage language) {
