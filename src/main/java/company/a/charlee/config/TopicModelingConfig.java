@@ -11,6 +11,7 @@ import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,25 +23,22 @@ import java.nio.file.Paths;
 public class TopicModelingConfig {
 
     @Bean
-    public TokenizerME tokenizer() throws IOException, URISyntaxException {
-        String tokenModelPath = Paths.get(ClassLoader.getSystemResource("models/en-token.bin").toURI()).toString();
-        InputStream tokenModelIn = Files.newInputStream(Paths.get(tokenModelPath));
+    public TokenizerME tokenizer() throws IOException {
+        InputStream tokenModelIn = new ClassPathResource("models/en-token.bin").getInputStream();
         TokenizerModel tokenModel = new TokenizerModel(tokenModelIn);
         return new TokenizerME(tokenModel);
     }
 
     @Bean
-    public POSTaggerME posTagger() throws IOException, URISyntaxException {
-        String posModelPath = Paths.get(ClassLoader.getSystemResource("models/en-pos.bin").toURI()).toString();
-        InputStream posModelIn = Files.newInputStream(Paths.get(posModelPath));
+    public POSTaggerME posTagger() throws IOException {
+        InputStream posModelIn = new ClassPathResource("models/en-pos.bin").getInputStream();
         POSModel posModel = new POSModel(posModelIn);
         return new POSTaggerME(posModel);
     }
 
     @Bean
-    public LanguageDetectorME languageDetector() throws IOException, URISyntaxException {
-        String ldPath = Paths.get(ClassLoader.getSystemResource("models/langdetect.bin").toURI()).toString();
-        InputStream ldModelIn = Files.newInputStream(Paths.get(ldPath));
+    public LanguageDetectorME languageDetector() throws IOException {
+        InputStream ldModelIn = new ClassPathResource("models/langdetect.bin").getInputStream();
         LanguageDetectorModel model = new LanguageDetectorModel(ldModelIn);
         return new LanguageDetectorME(model);
     }
