@@ -29,7 +29,7 @@ public interface TelegramPostRepository extends JpaRepository<TelegramPost, Stri
     @Query(value =
             "SELECT new company.a.charlee.entity.dto.AveragePostsSentimentValueDTO(CAST(t1.postDate AS java.time.LocalDate), AVG(t1.sentimentValue))\n" +
             "FROM TelegramPost t1\n" +
-            "WHERE t1.channel.channelTitle = :telegramChannelTitle\n" +
+            "WHERE t1.channel.channelTitle = :telegramChannelTitle AND t1.isProcessed = TRUE\n" +
             "GROUP BY CAST(t1.postDate AS date)\n" +
             "ORDER BY CAST(t1.postDate AS date)\n")
     List<AveragePostsSentimentValueDTO> getAverageSentimentValuesForChannelPostsByDates(
