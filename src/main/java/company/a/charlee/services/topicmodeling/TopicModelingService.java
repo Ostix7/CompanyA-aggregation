@@ -19,7 +19,7 @@ public class TopicModelingService {
 
     public List<String> findTopics(List<String> tokens, DetectedLanguage lang) {
         if (tokens.isEmpty())
-            return Collections.emptyList();
+            throw new RuntimeException("Error: cannot tokenize the text of the post");
         List<String> filteredTokens = posFilter.filterSignificantPOS(tokens, lang);
         Map<String, Integer> significantWordOccurrences = new HashMap<>();
         for (String filteredToken : filteredTokens) {

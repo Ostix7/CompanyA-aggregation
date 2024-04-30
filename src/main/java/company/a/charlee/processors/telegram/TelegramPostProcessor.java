@@ -22,9 +22,11 @@ public class TelegramPostProcessor {
     public void processUnprocessedPosts() {
         List<TelegramPost> unprocessedPosts = telegramPostRepository.findByIsProcessedFalse();
         for (TelegramPost post : unprocessedPosts) {
-            telegramProcessingService.doAnalyse(post);
-            post.setProcessed(true);
-            telegramPostRepository.save(post);
+            try {
+                telegramProcessingService.doAnalyse(post);
+                post.setProcessed(true);
+                telegramPostRepository.save(post);
+            } catch (Exception e) {}
         }
     }
 
