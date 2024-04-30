@@ -20,7 +20,7 @@ public class YoutubeVideoProcessor {
         this.youtubeProcessingService = youtubeProcessingService;
     }
 
-//    @Scheduled(fixedRate = 600000, initialDelay = 300000)
+//    @Scheduled(fixedRate = 600000)
 //    public void processUnprocessedVideos() {
 //        List<YoutubeVideo> unprocessedVideos = youtubeVideoRepository.findByIsProcessedFalse();
 //        for (YoutubeVideo video : unprocessedVideos) {
