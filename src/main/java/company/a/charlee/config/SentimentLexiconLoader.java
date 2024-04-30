@@ -3,8 +3,9 @@ package company.a.charlee.config;
 import company.a.charlee.utils.LanguageProcessingUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.util.ResourceUtils;
-
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.io.*;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -13,6 +14,9 @@ import java.util.function.Function;
 
 @Configuration
 public class SentimentLexiconLoader {
+
+    @Autowired
+    private ResourceLoader resourceLoader;
 
     @Bean
     public Map<String, Integer> uaSentimentBase() throws IOException {
@@ -38,23 +42,25 @@ public class SentimentLexiconLoader {
         return resMap;
     }
 
-    private static void parseFile(Map<String, Integer> mapToFill,
-                                  String fileName,
-                                  String delim,
-                                  Function<String, String> transformFunc,
-                                  int startFromLine) throws IOException {
-        File file = ResourceUtils.getFile("classpath:sentiment_db_files/" + fileName);
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file)))) {
+    private void parseFile(Map<String, Integer> mapToFill,
+                           String fileName,
+                           String delim,
+                           Function<String, String> transformFunc,
+                           int startFromLine) throws IOException {
+        Resource resource = resourceLoader.getResource("classpath:sentiment_db_files/" + fileName);
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
             String currentLine;
             StringTokenizer tk;
-            for (int i = 1; i < startFromLine; i++)
+            for (int i = 1; i < startFromLine; i++) {
                 br.readLine();
+            }
             while ((currentLine = br.readLine()) != null) {
                 tk = new StringTokenizer(currentLine, delim);
                 String key = tk.nextToken();
                 Integer value = Integer.parseInt(tk.nextToken());
-                if (transformFunc != null)
+                if (transformFunc != null) {
                     key = transformFunc.apply(key);
+                }
                 mapToFill.put(key, value);
             }
         }
