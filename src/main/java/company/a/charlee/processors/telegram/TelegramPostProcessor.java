@@ -18,14 +18,14 @@ public class TelegramPostProcessor {
         this.telegramProcessingService = telegramProcessingService;
     }
 
-//    @Scheduled(fixedRate = 600000)
-//    public void processUnprocessedPosts() {
-//        List<TelegramPost> unprocessedPosts = telegramPostRepository.findByIsProcessedFalse();
-//        for (TelegramPost post : unprocessedPosts) {
-//            telegramProcessingService.doAnalyse(post);
-//            post.setProcessed(true);
-//            telegramPostRepository.save(post);
-//        }
-//    }
+    @Scheduled(fixedRate = 600000)
+    public void processUnprocessedPosts() {
+        List<TelegramPost> unprocessedPosts = telegramPostRepository.findByIsProcessedFalse();
+        for (TelegramPost post : unprocessedPosts) {
+            telegramProcessingService.doAnalyse(post);
+            post.setProcessed(true);
+            telegramPostRepository.save(post);
+        }
+    }
 
 }
