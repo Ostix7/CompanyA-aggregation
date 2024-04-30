@@ -23,6 +23,6 @@ public interface YoutubeVideoRepository extends JpaRepository<YoutubeVideo, Long
 
     @Query("SELECT COUNT(v) FROM YoutubeVideo v WHERE v.isProcessed = true")
     Long countByIsProcessedTrue();
-    @Query("SELECT yv FROM YoutubeVideo yv WHERE yv.youtubeVideoId = :videoId ORDER BY yv.insertionTime DESC")
+    @Query(value = "SELECT * FROM youtube_videos yv WHERE yv.youtube_video_id = :videoId ORDER BY yv.insertion_time DESC LIMIT 1", nativeQuery = true)
     Optional<YoutubeVideo> findLatestByVideoId(String videoId);
 }

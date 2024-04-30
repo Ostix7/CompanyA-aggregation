@@ -15,7 +15,7 @@ public class YoutubeCaption extends SentimentValuedEntity {
     private String id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "youtube_video_id", referencedColumnName = "youtube_video_id", insertable = false, updatable = false)
+    @JoinColumn(name = "youtube_video_id", referencedColumnName = "youtube_video_id")
     private YoutubeVideo youtubeVideo;
 
     private String language;

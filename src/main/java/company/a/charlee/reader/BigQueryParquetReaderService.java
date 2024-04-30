@@ -52,8 +52,8 @@ public class BigQueryParquetReaderService {
         }
         else {
 //            processQueryForYouTube("SELECT * FROM `youtube-fetcher-418222.youtube.channel`");
-            processQueryForYouTube("SELECT * FROM `youtube-fetcher-418222.youtube.video`");
-//            processQueryForYouTube("SELECT * FROM `youtube-fetcher-418222.youtube.comment`");
+//            processQueryForYouTube("SELECT * FROM `youtube-fetcher-418222.youtube.video`");
+            processQueryForYouTube("SELECT * FROM `youtube-fetcher-418222.youtube.comment`");
 //            processQueryForYouTube("SELECT * FROM `youtube-fetcher-418222.youtube.subtitle`");
 
         }

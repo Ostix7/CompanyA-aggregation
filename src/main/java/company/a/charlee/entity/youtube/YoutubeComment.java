@@ -16,7 +16,7 @@ public class YoutubeComment {
     private String youtubeCommentId;
 
     @ManyToOne
-    @JoinColumn(name = "youtube_video_id", referencedColumnName = "youtube_video_id", insertable = false, updatable = false)
+    @JoinColumn(name = "youtube_video_id", referencedColumnName = "youtube_video_id")
     private YoutubeVideo youtubeVideo;
 
     private String text;
