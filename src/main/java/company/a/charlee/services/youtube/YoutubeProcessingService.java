@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -59,14 +60,14 @@ public class YoutubeProcessingService implements SocialMediaParquetProcessor {
 
 
     private void processVideos(FieldValueList videoRow) {
-        String videoId = videoRow.get("youtube_video_id").getStringValue();
-        YoutubeVideo video = youtubeVideoService.findByYoutubeVideoId(videoId);
-        if (video == null) {
-            video = new YoutubeVideo();
-            video.setId(videoRow.get("id").getStringValue());
+        Optional<ProcessedFile> existingProcessedFile = processedFileRepository.findByBigQueryId(videoRow.get("id").getStringValue());
+        if (existingProcessedFile.isPresent() && Boolean.TRUE.equals(existingProcessedFile.get().getIsProcessed())) {
+            return;
         }
-        video.setYoutubeVideoId(videoId);
 
+        YoutubeVideo video = new YoutubeVideo();
+        video.setId(videoRow.get("id").getStringValue());
+        video.setYoutubeVideoId(videoRow.get("youtube_video_id").getStringValue());
         if (!videoRow.get("title").isNull()) {
             video.setTitle(videoRow.get("title").getStringValue());
         }
@@ -77,59 +78,64 @@ public class YoutubeProcessingService implements SocialMediaParquetProcessor {
             video.setLikes(videoRow.get("likes").getLongValue());
         }
         if (!videoRow.get("published_at").isNull()) {
-            video.setPublishedAt(videoRow.get("published_at").getTimestampValue());
+            long publishedAtMillis = videoRow.get("published_at").getTimestampValue() / 1000000; // Convert microseconds to milliseconds
+            video.setPublishedAt((publishedAtMillis));
         }
         if (!videoRow.get("youtube_channel_id").isNull()) {
-            YoutubeChannel youtubeChannel = youtubeChannelService.findByChannelId(videoRow.get("youtube_channel_id").getStringValue());
-            video.setYoutubeChannel(youtubeChannel);
+            youtubeChannelService.findLatestByChannelId(videoRow.get("youtube_channel_id").getStringValue())
+                    .ifPresent(video::setYoutubeChannel);
         }
-
-        video.setInsertionTime(System.currentTimeMillis());
+        if (!videoRow.get("insertion_time").isNull()) {
+            long insertionTimeMillis = videoRow.get("insertion_time").getTimestampValue() / 1000000; // Convert microseconds to milliseconds
+            video.setInsertionTime(insertionTimeMillis);
+        } else {
+            video.setInsertionTime(new Date().getTime());
+        }
         video.setFetchedAt(new Date());
         youtubeVideoService.save(video);
         ProcessedFile processedFile = new ProcessedFile();
         processedFile.setBigQueryId(videoRow.get("id").getStringValue());
         processedFile.setIsProcessed(true);
         processedFile.setMediaType("youtube");
-        if(!processedFileRepository.findByBigQueryId(videoRow.get("id").getStringValue()).isPresent()){
-            processedFileRepository.save(processedFile);
-        }
+        processedFileRepository.save(processedFile);
     }
     private void processChannels(FieldValueList channelRow) {
-        String channelId = channelRow.get("youtube_channel_id").getStringValue();
-        YoutubeChannel channel = youtubeChannelService.findByChannelId(channelId);
-        if (channel == null) {
-            channel = new YoutubeChannel();
-            channel.setId(channelRow.get("id").getStringValue());
+        Optional<ProcessedFile> existingProcessedFile = processedFileRepository.findByBigQueryId(channelRow.get("id").getStringValue());
+        if (existingProcessedFile.isPresent() && existingProcessedFile.get().getIsProcessed()) {
+            return;
         }
-        channel.setYoutubeChannelId(channelId);
-
+        YoutubeChannel channel = new YoutubeChannel();
+        channel.setId(channelRow.get("id").getStringValue());
+        channel.setYoutubeChannelId(channelRow.get("youtube_channel_id").getStringValue());
         if (!channelRow.get("title").isNull()) {
             channel.setTitle(channelRow.get("title").getStringValue());
         }
         if (!channelRow.get("subscribers_count").isNull()) {
             channel.setSubscribersCount(channelRow.get("subscribers_count").getLongValue());
         }
-        channel.setInsertionTime(System.currentTimeMillis());
-
+        if (!channelRow.get("insertion_time").isNull()) {
+            long insertionTimeMillis = channelRow.get("insertion_time").getTimestampValue() / 1000000;
+            channel.setInsertionTime((insertionTimeMillis));
+        } else {
+            channel.setInsertionTime(new Date().getTime());
+        }
         youtubeChannelService.save(channel);
         ProcessedFile processedFile = new ProcessedFile();
         processedFile.setBigQueryId(channelRow.get("id").getStringValue());
         processedFile.setIsProcessed(true);
         processedFile.setMediaType("youtube");
-        if(!processedFileRepository.findByBigQueryId(channelRow.get("id").getStringValue()).isPresent()){
-            processedFileRepository.save(processedFile);
-        }
+        processedFileRepository.save(processedFile);
     }
     private void processComments(FieldValueList commentRow) {
-
-        YoutubeComment comment = youtubeCommentService.findByCommentId(commentRow.get("youtube_comment_id").getStringValue());
-        if(comment ==null) {
-             comment = new YoutubeComment();
-            comment.setId(commentRow.get("id").getStringValue());
+        Optional<ProcessedFile> existingProcessedFile = processedFileRepository.findByBigQueryId(commentRow.get("id").getStringValue());
+        if (existingProcessedFile.isPresent() && existingProcessedFile.get().getIsProcessed()) {
+            return; // Skip processing if already processed
         }
+        YoutubeComment comment = new YoutubeComment();
+        comment.setId(commentRow.get("id").getStringValue());
         comment.setYoutubeCommentId(commentRow.get("youtube_comment_id").getStringValue());
-        YoutubeVideo youtubeVideo =youtubeVideoService.findByYoutubeVideoId(commentRow.get("youtube_video_id").getStringValue());
+        YoutubeVideo youtubeVideo = youtubeVideoService.findLatestByVideoId(commentRow.get("youtube_video_id").getStringValue())
+                .orElse(null);
         comment.setYoutubeVideo(youtubeVideo);
         if (!commentRow.get("text").isNull()) {
             comment.setText(commentRow.get("text").getStringValue());
@@ -144,44 +150,51 @@ public class YoutubeProcessingService implements SocialMediaParquetProcessor {
             comment.setAuthorProfileImageUrl(commentRow.get("author_profile_image_url").getStringValue());
         }
         if (!commentRow.get("published_at").isNull()) {
-            comment.setPublishedAt(commentRow.get("published_at").getTimestampValue());
+            long publishedAtMillis = commentRow.get("published_at").getTimestampValue() / 1000;
+            comment.setPublishedAt((publishedAtMillis));
         }
-        comment.setInsertionTime(System.currentTimeMillis());
-
+        if (!commentRow.get("insertion_time").isNull()) {
+            long insertionTimeMillis = commentRow.get("insertion_time").getTimestampValue() / 1000;
+            comment.setInsertionTime(insertionTimeMillis);
+        } else {
+            comment.setInsertionTime(new Date().getTime());
+        }
         youtubeCommentService.save(comment);
         ProcessedFile processedFile = new ProcessedFile();
         processedFile.setBigQueryId(commentRow.get("id").getStringValue());
         processedFile.setIsProcessed(true);
-
         processedFile.setMediaType("youtube");
-        if(!processedFileRepository.findByBigQueryId(commentRow.get("id").getStringValue()).isPresent()){
-            processedFileRepository.save(processedFile);
-        }
+        processedFileRepository.save(processedFile);
     }
 
     private void processCaptions(FieldValueList captionRow) {
-        YoutubeCaption caption = youtubeCaptionService.findByYoutubeVideoId(captionRow.get("youtube_video_id").getStringValue());
-        if(caption ==null) {
-            caption = new YoutubeCaption();
-            caption.setId(captionRow.get("id").getStringValue());
+        Optional<ProcessedFile> existingProcessedFile = processedFileRepository.findByBigQueryId(captionRow.get("id").getStringValue());
+        if (existingProcessedFile.isPresent() && existingProcessedFile.get().getIsProcessed()) {
+            return; // Skip processing if already processed
         }
-
+        YoutubeCaption caption = new YoutubeCaption();
+        caption.setId(captionRow.get("id").getStringValue());
+        YoutubeVideo youtubeVideo = youtubeVideoService.findLatestByVideoId(captionRow.get("youtube_video_id").getStringValue())
+                .orElse(null);
+        caption.setYoutubeVideo(youtubeVideo);
         if (!captionRow.get("language").isNull()) {
             caption.setLanguage(captionRow.get("language").getStringValue());
         }
         if (!captionRow.get("content").isNull()) {
             caption.setContent(captionRow.get("content").getStringValue());
         }
-        caption.setInsertionTime(System.currentTimeMillis());
-        caption.setYoutubeVideo(youtubeVideoService.findByYoutubeVideoId(captionRow.get("youtube_video_id").getStringValue()));
+        if (!captionRow.get("insertion_time").isNull()) {
+            long insertionTimeMillis = captionRow.get("insertion_time").getTimestampValue() / 1000000; // Convert microseconds to milliseconds
+            caption.setInsertionTime((insertionTimeMillis));
+        } else {
+            caption.setInsertionTime(new Date().getTime());
+        }
         youtubeCaptionService.save(caption);
         ProcessedFile processedFile = new ProcessedFile();
         processedFile.setBigQueryId(caption.getId());
         processedFile.setIsProcessed(true);
         processedFile.setMediaType("youtube");
-        if(!processedFileRepository.findByBigQueryId(caption.getId()).isPresent()){
-            processedFileRepository.save(processedFile);
-        }
+        processedFileRepository.save(processedFile);
     }
 
 

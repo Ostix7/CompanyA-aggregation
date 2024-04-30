@@ -37,4 +37,8 @@ public class YoutubeChannelService {
     YoutubeChannel findByChannelId(String id) {
         return repository.findByYoutubeChannelId(id);
     }
+
+    public Optional<YoutubeChannel> findLatestByChannelId(String youtubeChannelId) {
+        return repository.findLatestByChannelId(youtubeChannelId);
+    }
 }

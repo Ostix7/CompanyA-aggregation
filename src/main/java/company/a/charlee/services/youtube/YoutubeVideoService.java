@@ -35,4 +35,8 @@ public class YoutubeVideoService {
     YoutubeVideo findByYoutubeVideoId(String id) {
         return repository.findByYoutubeVideoId(id);
     }
+
+    public Optional<YoutubeVideo> findLatestByVideoId(String youtubeVideoId) {
+        return repository.findLatestByVideoId(youtubeVideoId);
+    }
 }
