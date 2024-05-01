@@ -23,10 +23,15 @@ public class YoutubeVideoProcessor {
     @Scheduled(fixedRate = 600000, initialDelay = 0)
     public void processUnprocessedVideos() {
         List<YoutubeVideo> unprocessedVideos = youtubeVideoRepository.findByIsProcessedFalse();
+        System.out.println("STARTED PROCESSING YOUTUBE VIDEOS");
         for (YoutubeVideo video : unprocessedVideos) {
-            youtubeProcessingService.doAnalyse(video);
-            video.setIsProcessed(true);
-            youtubeVideoRepository.save(video);
+            try {
+                youtubeProcessingService.doAnalyse(video);
+                video.setIsProcessed(true);
+                youtubeVideoRepository.save(video);
+            } catch (Exception e) {
+                System.out.println("FAILED TO PROCESS YOUTUBE VIDEO: " + e.getMessage());
+            }
         }
     }
 

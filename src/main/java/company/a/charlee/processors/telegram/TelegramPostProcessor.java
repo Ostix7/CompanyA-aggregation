@@ -21,12 +21,15 @@ public class TelegramPostProcessor {
     @Scheduled(fixedRate = 600000, initialDelay = 0)
     public void processUnprocessedPosts() {
         List<TelegramPost> unprocessedPosts = telegramPostRepository.findByIsProcessedFalse();
+        System.out.println("STARTED PROCESSING TELEGRAM POSTS");
         for (TelegramPost post : unprocessedPosts) {
             try {
                 telegramProcessingService.doAnalyse(post);
                 post.setProcessed(true);
                 telegramPostRepository.save(post);
-            } catch (Exception e) {}
+            } catch (Exception e) {
+                System.out.println("FAILED TO PROCESS TELEGRAM POST: " + e.getMessage());
+            }
         }
     }
 
