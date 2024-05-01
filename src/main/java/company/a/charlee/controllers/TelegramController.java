@@ -3,10 +3,7 @@ package company.a.charlee.controllers;
 import company.a.charlee.entity.dto.*;
 import company.a.charlee.services.telegram.TelegramService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -17,8 +14,8 @@ public class TelegramController {
     @Autowired
     private TelegramService telegramService;
 
-    @GetMapping("/all-channels/{limit}")
-    public List<TelegramChannelDTO> getAllTelegramChannels(@PathVariable("limit") int limit) {
+    @GetMapping("/all-channels")
+    public List<TelegramChannelDTO> getAllTelegramChannels(@RequestParam(value = "limit") int limit) {
         return telegramService.getAllTelegramChannels(limit);
     }
 
