@@ -9,7 +9,6 @@ import company.a.charlee.services.SocialMediaParquetProcessor;
 import company.a.charlee.services.telegram.TelegramProcessingService;
 import company.a.charlee.services.youtube.YoutubeProcessingService;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
