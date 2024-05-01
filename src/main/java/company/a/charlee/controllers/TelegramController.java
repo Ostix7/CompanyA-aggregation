@@ -15,8 +15,8 @@ public class TelegramController {
     private TelegramService telegramService;
 
     @GetMapping("/all-channels")
-    public List<TelegramChannelDTO> getAllTelegramChannels(@RequestParam(value = "limit") int limit) {
-        return telegramService.getAllTelegramChannels(limit);
+    public List<TelegramChannelDTO> getAllTelegramChannels() {
+        return telegramService.getAllTelegramChannels();
     }
 
     @GetMapping("/avg-sentiment-values-by-dates/{telegram_channel_title}")

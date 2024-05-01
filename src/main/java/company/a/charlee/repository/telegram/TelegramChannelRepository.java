@@ -14,9 +14,8 @@ public interface TelegramChannelRepository extends JpaRepository<TelegramChannel
     @Query("SELECT tc.channelTitle, COUNT(tp) FROM TelegramChannel tc JOIN tc.posts tp GROUP BY tc.channelTitle")
     List<Object[]> countPostsByChannel();
 
-    @Query(nativeQuery = true,
-            value = "SELECT tc.channel_title FROM telegram_channel tc LIMIT :limit")
-    List<Object> getAll(int limit);
+    @Query(value = "SELECT new company.a.charlee.entity.dto.TelegramChannelDTO(tc.channelTitle) FROM TelegramChannel tc")
+    List<TelegramChannelDTO> getAll();
 
     @Query(value =
             "SELECT new company.a.charlee.entity.dto.ChannelViewsCountDTO(t2.channelTitle, SUM(t1.viewCount)) \n" +
