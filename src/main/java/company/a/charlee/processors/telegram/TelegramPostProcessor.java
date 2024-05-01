@@ -3,12 +3,14 @@ package company.a.charlee.processors.telegram;
 import company.a.charlee.entity.telegram.TelegramPost;
 import company.a.charlee.repository.telegram.TelegramPostRepository;
 import company.a.charlee.services.telegram.TelegramProcessingService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@Slf4j
 public class TelegramPostProcessor {
     private final TelegramPostRepository telegramPostRepository;
     private final TelegramProcessingService telegramProcessingService;
@@ -21,14 +23,14 @@ public class TelegramPostProcessor {
     @Scheduled(fixedRate = 600000, initialDelay = 0)
     public void processUnprocessedPosts() {
         List<TelegramPost> unprocessedPosts = telegramPostRepository.findByIsProcessedFalse();
-        System.out.println("STARTED PROCESSING TELEGRAM POSTS ");
+        log.info("STARTED PROCESSING TELEGRAM POSTS ");
         for (TelegramPost post : unprocessedPosts) {
             try {
                 telegramProcessingService.doAnalyse(post);
                 post.setProcessed(true);
                 telegramPostRepository.save(post);
             } catch (Exception e) {
-                System.out.println("FAILED TO PROCESS TELEGRAM POST: " + e.getMessage());
+                log.error("FAILED TO PROCESS TELEGRAM POST: " + e.getMessage());
             }
         }
     }
