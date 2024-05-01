@@ -20,10 +20,9 @@ public class TelegramService {
     private TelegramChannelRepository telegramChannelRepository;
 
     public List<TelegramChannelDTO> getAllTelegramChannels(int limit) {
-        return telegramChannelRepository.getAll(limit);
-//        return telegramChannelRepository.getAll(limit).stream().map(channel ->
-//                new TelegramChannelDTO((String) channel)
-//        ).collect(Collectors.toList());
+        return telegramChannelRepository.getAll(limit).stream().map(channel ->
+                new TelegramChannelDTO((String) channel)
+        ).collect(Collectors.toList());
     }
 
     public List<AveragePostsSentimentValueDTO> getAverageSentimentValuesForChannelPostsByDates(
