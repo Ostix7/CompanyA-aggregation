@@ -17,9 +17,9 @@ public class TelegramController {
     @Autowired
     private TelegramService telegramService;
 
-    @GetMapping("/all-channels")
-    public List<TelegramChannelDTO> getAllTelegramChannels() {
-        return telegramService.getAllTelegramChannels();
+    @GetMapping("/all-channels/{limit}")
+    public List<TelegramChannelDTO> getAllTelegramChannels(@PathVariable("limit") int limit) {
+        return telegramService.getAllTelegramChannels(limit);
     }
 
     @GetMapping("/avg-sentiment-values-by-dates/{telegram_channel_title}")

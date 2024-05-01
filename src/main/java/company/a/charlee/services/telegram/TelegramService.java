@@ -19,8 +19,8 @@ public class TelegramService {
     @Autowired
     private TelegramChannelRepository telegramChannelRepository;
 
-    public List<TelegramChannelDTO> getAllTelegramChannels() {
-        return telegramChannelRepository.getAll();
+    public List<TelegramChannelDTO> getAllTelegramChannels(int limit) {
+        return telegramChannelRepository.getAll(limit);
     }
 
     public List<AveragePostsSentimentValueDTO> getAverageSentimentValuesForChannelPostsByDates(
