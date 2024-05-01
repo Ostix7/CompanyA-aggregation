@@ -203,7 +203,9 @@ public class YoutubeProcessingService implements SocialMediaParquetProcessor {
         List<YoutubeCaption> captions = youtubeVideo.getCaptions();
         for(YoutubeCaption caption : captions) {
             DetectedLanguage lang = languageDetector.detectLanguage(caption.getContent(), caption.getLanguage());
-            String[] captTokens = tokenizer.tokenize(caption.getContent(), lang);
+            String content = caption.getContent();
+            String contentShortened = content.length() > 25000 ? content.substring(0,25000) : content;
+            String[] captTokens = tokenizer.tokenize(contentShortened, lang);
             performTopicModelingForYoutubeCaption(caption, captTokens, lang);
             analyzer.analyseEntity(caption, captTokens, lang);
         }
