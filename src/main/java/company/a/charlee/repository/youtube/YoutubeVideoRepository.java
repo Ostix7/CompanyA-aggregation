@@ -12,7 +12,8 @@ import java.util.Optional;
 
 @Repository
 public interface YoutubeVideoRepository extends JpaRepository<YoutubeVideo, Long> {
-    List<YoutubeVideo> findByIsProcessedFalse();
+    @Query(nativeQuery = true, value = "SELECT * FROM youtube_videos WHERE is_processed = FALSE LIMIT 100")
+    List<YoutubeVideo> get100NotProcessedVideos();
     YoutubeVideo findByYoutubeVideoId(String id);
 
     @Query("SELECT v FROM YoutubeVideo v WHERE v.youtubeChannel.id = :channelId")

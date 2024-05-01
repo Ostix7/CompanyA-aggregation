@@ -12,7 +12,9 @@ import java.util.List;
 
 @Repository
 public interface TelegramPostRepository extends JpaRepository<TelegramPost, String> {
-    List<TelegramPost> findByIsProcessedFalse();
+
+    @Query(nativeQuery = true, value = "SELECT * FROM telegram_post WHERE is_processed = FALSE LIMIT 100")
+    List<TelegramPost> get100NotProcessedPosts();
 //    @Query("SELECT tp.channel.channelTitle, AVG(tp.viewCount) FROM TelegramPost tp GROUP BY tp.channel.channelTitle")
 //    List<Object[]> avgViewCountByChannel();
 //
