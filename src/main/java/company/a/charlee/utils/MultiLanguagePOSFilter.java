@@ -1,11 +1,9 @@
 package company.a.charlee.utils;
 
+import opennlp.tools.ngram.NGramUtils;
 import opennlp.tools.postag.POSTaggerME;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -17,15 +15,15 @@ public class MultiLanguagePOSFilter {
         this.enPOSFilter = enPOSFilter;
     }
 
-    public List<String> filterSignificantPOS(List<String> tokens, DetectedLanguage language) {
+    public List<String> filterSignificantPOS(String[] tokens, DetectedLanguage language) {
         List<String> filteredPOS;
         switch (language) {
             case ENGLISH:
-                String[] tags = enPOSFilter.tag(tokens.toArray(new String[0]));
+                String[] tags = enPOSFilter.tag(tokens);
                 List<String> result = new ArrayList<>();
                 for (int i = 0; i < tags.length; i++) {
                     if (tags[i].equals("NOUN") || tags[i].equals("PROPN") || tags[i].equals("NOUN+PART") || tags[i].equals("PROPN+PART")) {
-                        result.add(tokens.get(i));
+                        result.add(tokens[i].toLowerCase());
                     }
                 }
                 filteredPOS = result;
@@ -43,21 +41,82 @@ public class MultiLanguagePOSFilter {
         return filteredPOS;
     }
 
-    private List<String> filterUkrainianPOS(List<String> tokens) {
-        return tokens.stream()
-                .filter(token -> !conjunctionsUkrSet.contains(token.toLowerCase()))
-                .filter(token -> !prepositionsUkrSet.contains(token.toLowerCase()))
-                .filter(token -> !pronounsUkrSet.contains(token.toLowerCase()))
-                .filter(token -> !exclamationsUkrSet.contains(token.toLowerCase()))
+    public List<String> filterSignificantPhraseTokensPOS(String[] tokens, DetectedLanguage language) {
+        List<String> filteredPOS;
+        Collection<String[]> nGrams = NGramUtils.getNGrams(tokens,2);
+        switch (language) {
+            case ENGLISH:
+                List<String> result = new ArrayList<>();
+                String[] tags = enPOSFilter.tag(tokens);
+                int index = 0;
+                for (String[] nGram : nGrams) {
+                    if (nGram.length == 2) {
+                        String fstPOS = tags[index];
+                        String sndPOS = tags[index + 1];
+                        if (isAcceptableEnglishPOS(fstPOS) && isAcceptableEnglishPOS(sndPOS)) {
+                            result.add(nGram[0] + " " + nGram[1]);
+                        }
+                        index++;
+                    }
+                }
+                filteredPOS = result;
+                break;
+            case UKRAINIAN:
+                filteredPOS = filterUkrainianNGramsPOS(nGrams);
+                break;
+            case RUSSIAN:
+                filteredPOS = filterRussianNGramsPOS(nGrams);
+                break;
+            default:
+                filteredPOS = new ArrayList<>();
+                break;
+        }
+        return filteredPOS;
+    }
+
+    private boolean isAcceptableEnglishPOS(String pos) {
+        return pos.equals("NOUN") || pos.equals("PROPN") || pos.equals("VERB") || pos.equals("ADJ") || pos.equals("ADV");
+    }
+
+    private List<String> filterUkrainianPOS(String[] tokens) {
+        return Arrays.stream(tokens)
+                .map(String::toLowerCase)
+                .filter(token -> !conjunctionsUkrSet.contains(token))
+                .filter(token -> !prepositionsUkrSet.contains(token))
+                .filter(token -> !pronounsUkrSet.contains(token))
+                .filter(token -> !exclamationsUkrSet.contains(token))
                 .collect(Collectors.toList());
     }
 
-    private List<String> filterRussianPOS(List<String> tokens) {
-        return tokens.stream()
-                .filter(token -> !conjunctionsRusSet.contains(token.toLowerCase()))
-                .filter(token -> !prepositionsRusSet.contains(token.toLowerCase()))
-                .filter(token -> !pronounsRusSet.contains(token.toLowerCase()))
-                .filter(token -> !exclamationsRusSet.contains(token.toLowerCase()))
+    private List<String> filterUkrainianNGramsPOS(Collection<String[]> nGrams) {
+        return nGrams.stream()
+                .filter(nGram -> nGram.length == 2)
+                .filter(nGram -> !conjunctionsUkrSet.contains(nGram[0].toLowerCase()) && !conjunctionsUkrSet.contains(nGram[1].toLowerCase()))
+                .filter(nGram -> !prepositionsUkrSet.contains(nGram[0].toLowerCase()) && !prepositionsUkrSet.contains(nGram[1].toLowerCase()))
+                .filter(nGram -> !pronounsUkrSet.contains(nGram[0].toLowerCase()) && !pronounsUkrSet.contains(nGram[1].toLowerCase()))
+                .filter(nGram -> !exclamationsUkrSet.contains(nGram[0].toLowerCase()) && !exclamationsUkrSet.contains(nGram[1].toLowerCase()))
+                .map(nGram -> nGram[0].toLowerCase() + " " + nGram[1].toLowerCase())
+                .collect(Collectors.toList());
+    }
+
+    private List<String> filterRussianPOS(String[] tokens) {
+        return Arrays.stream(tokens)
+                .map(String::toLowerCase)
+                .filter(token -> !conjunctionsRusSet.contains(token))
+                .filter(token -> !prepositionsRusSet.contains(token))
+                .filter(token -> !pronounsRusSet.contains(token))
+                .filter(token -> !exclamationsRusSet.contains(token))
+                .collect(Collectors.toList());
+    }
+
+    private List<String> filterRussianNGramsPOS(Collection<String[]> nGrams) {
+        return nGrams.stream()
+                .filter(nGram -> nGram.length == 2)
+                .filter(nGram -> !conjunctionsRusSet.contains(nGram[0].toLowerCase()) && !conjunctionsRusSet.contains(nGram[1].toLowerCase()))
+                .filter(nGram -> !prepositionsRusSet.contains(nGram[0].toLowerCase()) && !prepositionsRusSet.contains(nGram[1].toLowerCase()))
+                .filter(nGram -> !pronounsRusSet.contains(nGram[0].toLowerCase()) && !pronounsRusSet.contains(nGram[1].toLowerCase()))
+                .filter(nGram -> !exclamationsRusSet.contains(nGram[0].toLowerCase()) && !exclamationsRusSet.contains(nGram[1].toLowerCase()))
+                .map(nGram -> nGram[0].toLowerCase() + " " + nGram[1].toLowerCase())
                 .collect(Collectors.toList());
     }
 

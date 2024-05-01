@@ -21,10 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -163,14 +160,16 @@ public class TelegramProcessingService implements SocialMediaParquetProcessor {
     public void doAnalyse(TelegramPost telegramPost) {
         String postText = telegramPost.getFullText();
         DetectedLanguage language = languageDetector.detectLanguage(postText, telegramPost.getLang());
-        List<String> tokens = tokenizer.tokenize(postText, language);
+        String[] tokens = tokenizer.tokenize(postText, language);
         performTopicModeling(telegramPost, tokens, language);
         analyzer.analyseEntity(telegramPost, tokens, language);
     }
 
-    private void performTopicModeling(TelegramPost telegramPost, List<String> tokens, DetectedLanguage language) {
+    private void performTopicModeling(TelegramPost telegramPost, String[] tokens, DetectedLanguage language) {
         List<String> topics = topicModelingService.findTopics(tokens, language);
         telegramPost.setTopics(topics);
+        List<String> phraseTopics = topicModelingService.findPhraseTopics(tokens, language);
+        telegramPost.setPhraseTopics(phraseTopics);
     }
 
 }

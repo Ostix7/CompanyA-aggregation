@@ -18,6 +18,7 @@ import company.a.charlee.utils.MultiLanguageTokenizer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -202,15 +203,17 @@ public class YoutubeProcessingService implements SocialMediaParquetProcessor {
         List<YoutubeCaption> captions = youtubeVideo.getCaptions();
         for(YoutubeCaption caption : captions) {
             DetectedLanguage lang = languageDetector.detectLanguage(caption.getContent(), caption.getLanguage());
-            List<String> captTokens = tokenizer.tokenize(caption.getContent(), lang);
+            String[] captTokens = tokenizer.tokenize(caption.getContent(), lang);
             performTopicModelingForYoutubeCaption(caption, captTokens, lang);
             analyzer.analyseEntity(caption, captTokens, lang);
         }
     }
 
-    private void performTopicModelingForYoutubeCaption(YoutubeCaption youtubeCaption, List<String> tokens, DetectedLanguage language) {
+    private void performTopicModelingForYoutubeCaption(YoutubeCaption youtubeCaption, String[] tokens, DetectedLanguage language) {
         List<String> topics = topicModelingService.findTopics(tokens, language);
         youtubeCaption.setTopics(topics);
+        List<String> phraseTopics = topicModelingService.findPhraseTopics(tokens, language);
+        youtubeCaption.setPhraseTopics(phraseTopics);
     }
 
 }

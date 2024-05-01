@@ -1,11 +1,8 @@
 package company.a.charlee.utils;
 
-import opennlp.tools.langdetect.Language;
-import opennlp.tools.langdetect.LanguageDetectorME;
 import opennlp.tools.tokenize.TokenizerME;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,26 +15,26 @@ public class MultiLanguageTokenizer {
         this.enTokenizer = enTokenizer;
     }
 
-    public List<String> tokenize(String text, DetectedLanguage language) {
-        List<String> tokens;
+    public String[] tokenize(String text, DetectedLanguage language) {
+        String[] tokens;
         switch (language) {
             case ENGLISH:
-                tokens = Arrays.asList(enTokenizer.tokenize(text));
+                tokens = enTokenizer.tokenize(text);
                 break;
             case UKRAINIAN:
             case RUSSIAN:
                 tokens = tokenizeUkrOrRus(text);
                 break;
             default:
-                tokens = new ArrayList<>();
+                tokens = new String[0];
                 break;
         }
         return tokens;
     }
 
-    public List<String> tokenizeUkrOrRus(String text) {
+    public String[] tokenizeUkrOrRus(String text) {
         if (text == null || text.isEmpty()) {
-            return new ArrayList<>();
+            return new String[0];
         }
 
         String pattern = "(\\p{L}+([’']\\p{L}+)*)";
@@ -49,7 +46,7 @@ public class MultiLanguageTokenizer {
             tokens.add(m.group());
         }
 
-        return tokens;
+        return tokens.toArray(new String[0]);
     }
 
 }

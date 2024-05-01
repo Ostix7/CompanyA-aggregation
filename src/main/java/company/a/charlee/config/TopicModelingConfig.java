@@ -5,6 +5,7 @@ import company.a.charlee.utils.MultiLanguagePOSFilter;
 import company.a.charlee.utils.MultiLanguageTokenizer;
 import opennlp.tools.langdetect.LanguageDetectorME;
 import opennlp.tools.langdetect.LanguageDetectorModel;
+import opennlp.tools.ngram.NGramUtils;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.tokenize.TokenizerME;

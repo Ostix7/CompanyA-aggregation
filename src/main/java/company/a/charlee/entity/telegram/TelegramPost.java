@@ -38,6 +38,11 @@ public class TelegramPost extends SentimentValuedEntity {
     @Column(name = "topic_modeling")
     private List<String> topics;
 
+    @ElementCollection
+    @CollectionTable(name = "telegram_post_phrase_topics")
+    @Column(name = "topic_modeling_phrases")
+    private List<String> phraseTopics;
+
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<TelegramMedia> media;
 

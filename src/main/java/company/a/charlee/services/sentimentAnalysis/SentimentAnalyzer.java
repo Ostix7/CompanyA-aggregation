@@ -19,8 +19,8 @@ public class SentimentAnalyzer {
     
     private final Map<String, Integer> ruSentimentBase;
 
-    public void analyseEntity(SentimentValuedEntity entity, List<String> tokens, DetectedLanguage lang) {
-        if (tokens.isEmpty())
+    public void analyseEntity(SentimentValuedEntity entity, String[] tokens, DetectedLanguage lang) {
+        if (tokens.length == 0)
             throw new RuntimeException("Error: cannot tokenize the text of the post");
 
         Function<String, String> transformFunc = null;
@@ -55,8 +55,8 @@ public class SentimentAnalyzer {
             accumulator += sentimentVal;
         }
 
-        double sentimentValue = (tokens.size() == absentWordsCount) ? 0.0 :
-                1.0 * accumulator / (tokens.size() - absentWordsCount);
+        double sentimentValue = (tokens.length == absentWordsCount) ? 0.0 :
+                1.0 * accumulator / (tokens.length - absentWordsCount);
         entity.setSentimentValue(sentimentValue);
     }
 

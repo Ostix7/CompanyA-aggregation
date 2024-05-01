@@ -31,4 +31,9 @@ public class YoutubeCaption extends SentimentValuedEntity {
     @Column(name = "topic_modeling")
     private List<String> topics;
 
+    @ElementCollection
+    @CollectionTable(name = "youtube_caption_phrase_topics")
+    @Column(name = "topic_modeling_phrases")
+    private List<String> phraseTopics;
+
 }

@@ -17,10 +17,21 @@ public class TopicModelingService {
 
     private final MultiLanguagePOSFilter posFilter;
 
-    public List<String> findTopics(List<String> tokens, DetectedLanguage lang) {
-        if (tokens.isEmpty())
-            throw new RuntimeException("Error: cannot tokenize the text of the post");
+    public List<String> findTopics(String[] tokens, DetectedLanguage lang) {
+        if (tokens.length == 0)
+            throw new RuntimeException("Error: no tokens found");
         List<String> filteredTokens = posFilter.filterSignificantPOS(tokens, lang);
+        return getSignificantTopics(filteredTokens);
+    }
+
+    public List<String> findPhraseTopics(String[] tokens, DetectedLanguage lang) {
+        if (tokens.length == 0)
+            throw new RuntimeException("Error: no tokens found");
+        List<String> filteredTokens = posFilter.filterSignificantPhraseTokensPOS(tokens, lang);
+        return getSignificantTopics(filteredTokens);
+    }
+
+    private List<String> getSignificantTopics(List<String> filteredTokens) {
         Map<String, Integer> significantWordOccurrences = new HashMap<>();
         for (String filteredToken : filteredTokens) {
             significantWordOccurrences.put(filteredToken, significantWordOccurrences.getOrDefault(filteredToken, 0) + 1);
