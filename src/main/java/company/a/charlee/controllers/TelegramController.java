@@ -41,6 +41,14 @@ public class TelegramController {
         return telegramService.getPostTopicModelingOccurrencesByDates(telegramChannelTitle, topicsLimitByDate);
     }
 
+    @GetMapping("/post-phrase-topic-occurrences-by-dates/{telegram_channel_title}/{topics_limit_by_date}")
+    public List<PostTopicModelingOccurrencesDTO> getPostPhraseTopicModelingOccurrencesByDates(
+            @PathVariable("telegram_channel_title") String telegramChannelTitle,
+            @PathVariable("topics_limit_by_date") Integer topicsLimitByDate
+    ) {
+        return telegramService.getPostPhraseTopicModelingOccurrencesByDates(telegramChannelTitle, topicsLimitByDate);
+    }
+
     @GetMapping("/post-comments-engagement-by-dates/{telegram_channel_title}")
     public List<CommentsEngagementForPostsDTO> getCommentsEngagementForPostsByDates(
             @PathVariable("telegram_channel_title") String telegramChannelTitle

@@ -69,6 +69,27 @@ public interface TelegramPostRepository extends JpaRepository<TelegramPost, Stri
             @Param("topicsLimitByDate") Integer topicsLimitByDate
     );
 
+    @Query(nativeQuery = true, value =
+            "SELECT post_date AS postDate, word AS topic, occurrences AS occurrences\n" +
+                    "FROM (\n" +
+                    "    SELECT \n" +
+                    "        CAST(t2.post_date AS date) AS post_date, \n" +
+                    "        lower(t1.topic_modeling_phrases) as word, \n" +
+                    "        count(lower(t1.topic_modeling_phrases)) as occurrences,\n" +
+                    "        ROW_NUMBER() OVER (PARTITION BY CAST(t2.post_date AS date) ORDER BY count(lower(t1.topic_modeling_phrases)) DESC) as rn\n" +
+                    "    FROM telegram_post_phrase_topics t1 \n" +
+                    "    JOIN telegram_post t2 ON t1.telegram_post_id = t2.id \n" +
+                    "    JOIN telegram_channel t3 ON t2.channel_id = t3.channel_id \n" +
+                    "    WHERE t3.channel_title = :telegramChannelTitle\n" +
+                    "    GROUP BY CAST(t2.post_date AS date), lower(t1.topic_modeling_phrases)\n" +
+                    ") ranked_words\n" +
+                    "WHERE rn <= :topicsLimitByDate\n" +
+                    "ORDER BY post_date, occurrences DESC;\n")
+    List<Object[]> getPostPhraseTopicModelingOccurrencesByDates(
+            @Param("telegramChannelTitle") String telegramChannelTitle,
+            @Param("topicsLimitByDate") Integer topicsLimitByDate
+    );
+
     @Query(value =
             "SELECT new company.a.charlee.entity.dto.CommentsEngagementForPostsDTO(CAST(t2.postDate AS java.time.LocalDate), COUNT(t1.commentId))\n" +
             "FROM TelegramComment t1 JOIN t1.post t2 JOIN t2.channel t3 \n" +

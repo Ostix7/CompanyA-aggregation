@@ -48,6 +48,19 @@ public class TelegramService {
                 .collect(Collectors.toList());
     }
 
+    public List<PostTopicModelingOccurrencesDTO> getPostPhraseTopicModelingOccurrencesByDates(
+            String telegramChannelTitle,
+            Integer topicsLimitByDate
+    ) {
+        List<Object[]> results = telegramPostRepository.getPostPhraseTopicModelingOccurrencesByDates(telegramChannelTitle, topicsLimitByDate);
+        return results.stream()
+                .map(result -> new PostTopicModelingOccurrencesDTO(
+                        ((Date) result[0]).toLocalDate(),
+                        (String) result[1],
+                        ((Number) result[2]).longValue()))
+                .collect(Collectors.toList());
+    }
+
     public List<CommentsEngagementForPostsDTO> getCommentsEngagementForPostsByDates(
             String telegramChannelTitle
     ) {
