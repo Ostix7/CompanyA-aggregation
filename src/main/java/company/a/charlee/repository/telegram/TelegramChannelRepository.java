@@ -15,7 +15,7 @@ public interface TelegramChannelRepository extends JpaRepository<TelegramChannel
     List<Object[]> countPostsByChannel();
 
     @Query(nativeQuery = true,
-            value = "SELECT tc.channelTitle FROM telegram_channel tc LIMIT :limit")
+            value = "SELECT tc.channel_title FROM telegram_channel tc LIMIT :limit")
     List<Object> getAll(int limit);
 
     @Query(value =
