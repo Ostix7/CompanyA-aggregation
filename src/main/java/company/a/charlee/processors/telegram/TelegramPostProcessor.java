@@ -20,22 +20,22 @@ public class TelegramPostProcessor {
         this.telegramProcessingService = telegramProcessingService;
     }
 
-    @Scheduled(fixedRate = 600000, initialDelay = 0)
-    public void processUnprocessedPosts() {
-        log.info("STARTED PROCESSING TELEGRAM POSTS ");
-        List<TelegramPost> unprocessedPosts;
-        do {
-            unprocessedPosts = telegramPostRepository.get100NotProcessedPosts();
-            for (TelegramPost post : unprocessedPosts) {
-                try {
-                    telegramProcessingService.doAnalyse(post);
-                    post.setProcessed(true);
-                    telegramPostRepository.save(post);
-                } catch (Exception e) {
-                    log.error("FAILED TO PROCESS TELEGRAM POST: " + e.getMessage());
-                }
-            }
-        } while (unprocessedPosts.size() == 100);
-    }
+//    @Scheduled(fixedRate = 600000, initialDelay = 0)
+//    public void processUnprocessedPosts() {
+//        log.info("STARTED PROCESSING TELEGRAM POSTS ");
+//        List<TelegramPost> unprocessedPosts;
+//        do {
+//            unprocessedPosts = telegramPostRepository.get100NotProcessedPosts();
+//            for (TelegramPost post : unprocessedPosts) {
+//                try {
+//                    telegramProcessingService.doAnalyse(post);
+//                    post.setProcessed(true);
+//                    telegramPostRepository.save(post);
+//                } catch (Exception e) {
+//                    log.error("FAILED TO PROCESS TELEGRAM POST: " + e.getMessage());
+//                }
+//            }
+//        } while (unprocessedPosts.size() == 100);
+//    }
 
 }
