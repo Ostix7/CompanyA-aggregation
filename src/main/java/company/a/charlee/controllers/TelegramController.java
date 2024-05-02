@@ -1,5 +1,6 @@
 package company.a.charlee.controllers;
 
+import company.a.charlee.entity.Segment;
 import company.a.charlee.entity.TimeUnit;
 import company.a.charlee.entity.dto.*;
 import company.a.charlee.services.telegram.TelegramService;
@@ -22,9 +23,9 @@ public class TelegramController {
         return telegramService.getAllTelegramChannels();
     }
 
-    @GetMapping("/avg-sentiment-values-by-dates/{telegram_channel_title}")
+    @GetMapping("/avg-sentiment-values-by-dates")
     public List<AveragePostsSentimentValueDTO> getAverageSentimentValuesForChannelPostsByDates(
-            @PathVariable("telegram_channel_title") String telegramChannelTitle,
+            @RequestParam(value = "telegram_channel_title") String telegramChannelTitle,
             @RequestParam(value = "time_unit", required = false) String timeUnit,
             @RequestParam(value = "step") int step,
             @RequestParam(value = "start_date") String startDate,
@@ -39,17 +40,28 @@ public class TelegramController {
         );
     }
 
-    @GetMapping("/total-posts-views-by-dates/{telegram_channel_title}")
-    public List<TotalPostsViewsDTO> getTotalPostsViewsByDates(
-            @PathVariable("telegram_channel_title") String telegramChannelTitle
+    @GetMapping("/avg-sentiment-values-by-dates-for-segment")
+    public List<AveragePostsSentimentValueDTO> getAverageSentimentValuesForSegmentPostsByDates(
+            @RequestParam(value = "segment", required = false) String segment,
+            @RequestParam(value = "time_unit", required = false) String timeUnit,
+            @RequestParam(value = "step") int step,
+            @RequestParam(value = "start_date") String startDate,
+            @RequestParam(value = "end_date") String endDate
     ) {
-        return telegramService.getTotalPostsViewsByDates(telegramChannelTitle);
+        Segment postSegment = segment != null ? Segment.valueOf(segment.toUpperCase()) : Segment.ENG;
+        TimeUnit time = timeUnit != null ? TimeUnit.valueOf(timeUnit.toUpperCase()) : TimeUnit.DAY;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate start = LocalDate.parse(startDate,formatter);
+        LocalDate end = LocalDate.parse(endDate,formatter);
+        return telegramService.getAverageSentimentValuesForSegmentPostsByDates(
+                postSegment, time, step, start, end
+        );
     }
 
-    @GetMapping("/post-topic-occurrences-by-dates/{telegram_channel_title}/{topics_limit_by_date}")
+    @GetMapping("/post-topic-occurrences-by-dates")
     public List<PostTopicModelingOccurrencesDTO> getPostTopicModelingOccurrencesByDates(
-            @PathVariable("telegram_channel_title") String telegramChannelTitle,
-            @PathVariable("topics_limit_by_date") Integer topicsLimitByDate,
+            @RequestParam("telegram_channel_title") String telegramChannelTitle,
+            @RequestParam("topics_limit_by_date") Integer topicsLimitByDate,
             @RequestParam(value = "time_unit", required = false) String timeUnit,
             @RequestParam(value = "step") int step,
             @RequestParam(value = "start_date") String startDate,
@@ -64,10 +76,29 @@ public class TelegramController {
         );
     }
 
-    @GetMapping("/post-phrase-topic-occurrences-by-dates/{telegram_channel_title}/{topics_limit_by_date}")
+    @GetMapping("/post-topic-occurrences-by-dates-for-segment")
+    public List<PostTopicModelingOccurrencesDTO> getPostTopicModelingOccurrencesByDatesForSegment(
+            @RequestParam("segment") String segment,
+            @RequestParam("topics_limit_by_date") Integer topicsLimitByDate,
+            @RequestParam(value = "time_unit", required = false) String timeUnit,
+            @RequestParam(value = "step") int step,
+            @RequestParam(value = "start_date") String startDate,
+            @RequestParam(value = "end_date") String endDate
+    ) {
+        Segment postSegment = segment != null ? Segment.valueOf(segment.toUpperCase()) : Segment.ENG;
+        TimeUnit time = timeUnit != null ? TimeUnit.valueOf(timeUnit.toUpperCase()) : TimeUnit.DAY;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate start = LocalDate.parse(startDate,formatter);
+        LocalDate end = LocalDate.parse(endDate,formatter);
+        return telegramService.getPostTopicModelingOccurrencesByDatesForSegment(
+                postSegment, topicsLimitByDate, time, step, start, end
+        );
+    }
+
+    @GetMapping("/post-phrase-topic-occurrences-by-dates")
     public List<PostTopicModelingOccurrencesDTO> getPostPhraseTopicModelingOccurrencesByDates(
-            @PathVariable("telegram_channel_title") String telegramChannelTitle,
-            @PathVariable("topics_limit_by_date") Integer topicsLimitByDate,
+            @RequestParam("telegram_channel_title") String telegramChannelTitle,
+            @RequestParam("topics_limit_by_date") Integer topicsLimitByDate,
             @RequestParam(value = "time_unit", required = false) String timeUnit,
             @RequestParam(value = "step") int step,
             @RequestParam(value = "start_date") String startDate,
@@ -82,9 +113,28 @@ public class TelegramController {
         );
     }
 
-    @GetMapping("/post-comments-engagement-by-dates/{telegram_channel_title}")
+    @GetMapping("/post-phrase-topic-occurrences-by-dates-for-segment")
+    public List<PostTopicModelingOccurrencesDTO> getPostPhraseTopicModelingOccurrencesByDatesForSegment(
+            @RequestParam("segment") String segment,
+            @RequestParam("topics_limit_by_date") Integer topicsLimitByDate,
+            @RequestParam(value = "time_unit", required = false) String timeUnit,
+            @RequestParam(value = "step") int step,
+            @RequestParam(value = "start_date") String startDate,
+            @RequestParam(value = "end_date") String endDate
+    ) {
+        Segment postSegment = segment != null ? Segment.valueOf(segment.toUpperCase()) : Segment.ENG;
+        TimeUnit time = timeUnit != null ? TimeUnit.valueOf(timeUnit.toUpperCase()) : TimeUnit.DAY;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate start = LocalDate.parse(startDate,formatter);
+        LocalDate end = LocalDate.parse(endDate,formatter);
+        return telegramService.getPostPhraseTopicModelingOccurrencesByDatesForSegment(
+                postSegment, topicsLimitByDate, time, step, start, end
+        );
+    }
+
+    @GetMapping("/post-comments-engagement-by-dates")
     public List<CommentsEngagementForPostsDTO> getCommentsEngagementForPostsByDates(
-            @PathVariable("telegram_channel_title") String telegramChannelTitle,
+            @RequestParam("telegram_channel_title") String telegramChannelTitle,
             @RequestParam(value = "time_unit", required = false) String timeUnit,
             @RequestParam(value = "step") int step,
             @RequestParam(value = "start_date") String startDate,
@@ -99,9 +149,27 @@ public class TelegramController {
         );
     }
 
-    @GetMapping("/post-reactions-engagement-by-dates/{telegram_channel_title}")
+    @GetMapping("/post-comments-engagement-by-dates-for-segment")
+    public List<CommentsEngagementForPostsDTO> getCommentsEngagementForPostsByDatesForSegment(
+            @RequestParam("segment") String segment,
+            @RequestParam(value = "time_unit", required = false) String timeUnit,
+            @RequestParam(value = "step") int step,
+            @RequestParam(value = "start_date") String startDate,
+            @RequestParam(value = "end_date") String endDate
+    ) {
+        Segment postSegment = segment != null ? Segment.valueOf(segment.toUpperCase()) : Segment.ENG;
+        TimeUnit time = timeUnit != null ? TimeUnit.valueOf(timeUnit.toUpperCase()) : TimeUnit.DAY;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate start = LocalDate.parse(startDate,formatter);
+        LocalDate end = LocalDate.parse(endDate,formatter);
+        return telegramService.getCommentsEngagementForPostsByDatesForSegment(
+                postSegment, time, step, start, end
+        );
+    }
+
+    @GetMapping("/post-reactions-engagement-by-dates")
     public List<ReactionsEngagementForPostsDTO> getReactionsEngagementForPostsByDates(
-            @PathVariable("telegram_channel_title") String telegramChannelTitle,
+            @RequestParam("telegram_channel_title") String telegramChannelTitle,
             @RequestParam(value = "time_unit", required = false) String timeUnit,
             @RequestParam(value = "step") int step,
             @RequestParam(value = "start_date") String startDate,
@@ -113,6 +181,59 @@ public class TelegramController {
         LocalDate end = LocalDate.parse(endDate,formatter);
         return telegramService.getReactionsEngagementForPostsByDates(
                 telegramChannelTitle, time, step, start, end
+        );
+    }
+
+    @GetMapping("/post-reactions-engagement-by-dates-for-segment")
+    public List<ReactionsEngagementForPostsDTO> getReactionsEngagementForPostsByDatesForSegment(
+            @RequestParam("segment") String segment,
+            @RequestParam(value = "time_unit", required = false) String timeUnit,
+            @RequestParam(value = "step") int step,
+            @RequestParam(value = "start_date") String startDate,
+            @RequestParam(value = "end_date") String endDate
+    ) {
+        Segment postSegment = segment != null ? Segment.valueOf(segment.toUpperCase()) : Segment.ENG;
+        TimeUnit time = timeUnit != null ? TimeUnit.valueOf(timeUnit.toUpperCase()) : TimeUnit.DAY;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate start = LocalDate.parse(startDate,formatter);
+        LocalDate end = LocalDate.parse(endDate,formatter);
+        return telegramService.getReactionsEngagementForPostsByDatesForSegment(
+                postSegment, time, step, start, end
+        );
+    }
+
+    @GetMapping("/total-posts-views-by-dates")
+    public List<TotalPostsViewsDTO> getTotalPostsViewsByDates(
+            @RequestParam("telegram_channel_title") String telegramChannelTitle,
+            @RequestParam(value = "time_unit", required = false) String timeUnit,
+            @RequestParam(value = "step") int step,
+            @RequestParam(value = "start_date") String startDate,
+            @RequestParam(value = "end_date") String endDate
+    ) {
+        TimeUnit time = timeUnit != null ? TimeUnit.valueOf(timeUnit.toUpperCase()) : TimeUnit.DAY;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate start = LocalDate.parse(startDate,formatter);
+        LocalDate end = LocalDate.parse(endDate,formatter);
+        return telegramService.getTotalPostsViewsByDates(
+                telegramChannelTitle, time, step, start, end
+        );
+    }
+
+    @GetMapping("/total-posts-views-by-dates-for-segment")
+    public List<TotalPostsViewsDTO> getTotalPostsViewsByDatesForSegment(
+            @RequestParam("segment") String segment,
+            @RequestParam(value = "time_unit", required = false) String timeUnit,
+            @RequestParam(value = "step") int step,
+            @RequestParam(value = "start_date") String startDate,
+            @RequestParam(value = "end_date") String endDate
+    ) {
+        Segment postSegment = segment != null ? Segment.valueOf(segment.toUpperCase()) : Segment.ENG;
+        TimeUnit time = timeUnit != null ? TimeUnit.valueOf(timeUnit.toUpperCase()) : TimeUnit.DAY;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate start = LocalDate.parse(startDate,formatter);
+        LocalDate end = LocalDate.parse(endDate,formatter);
+        return telegramService.getTotalPostsViewsByDatesForSegment(
+                postSegment, time, step, start, end
         );
     }
 

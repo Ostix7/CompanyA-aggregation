@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -13,7 +14,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class TotalPostsViewsDTO {
 
-    private LocalDate postDate;
+    private LocalDateTime postDate;
 
     private Long totalViews;
 

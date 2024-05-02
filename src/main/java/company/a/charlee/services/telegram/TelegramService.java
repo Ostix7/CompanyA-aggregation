@@ -1,5 +1,6 @@
 package company.a.charlee.services.telegram;
 
+import company.a.charlee.entity.Segment;
 import company.a.charlee.entity.TimeUnit;
 import company.a.charlee.entity.dto.*;
 import company.a.charlee.repository.telegram.TelegramChannelRepository;
@@ -40,7 +41,27 @@ public class TelegramService {
                 timeUnit.getSecondsFromTimeFrame() * (long) step,
                 startDate.atStartOfDay().atZone(ZoneId.systemDefault()).toEpochSecond(),
                 endDate.atStartOfDay().atZone(ZoneId.systemDefault()).toEpochSecond()
+        );
+        return results.stream()
+                .map(result -> new AveragePostsSentimentValueDTO(
+                        ((Timestamp) result[0]).toLocalDateTime(),
+                        ((Number) result[1]).doubleValue()))
+                .collect(Collectors.toList());
+    }
 
+    public List<AveragePostsSentimentValueDTO> getAverageSentimentValuesForSegmentPostsByDates(
+            Segment segment,
+            TimeUnit timeUnit,
+            int step,
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+        List<Object[]> results = telegramPostRepository.getAverageSentimentValuesForSegmentPostsByDates(
+                segment.getSegmentAsString(),
+                timeUnit.name().toLowerCase(),
+                timeUnit.getSecondsFromTimeFrame() * (long) step,
+                startDate.atStartOfDay().atZone(ZoneId.systemDefault()).toEpochSecond(),
+                endDate.atStartOfDay().atZone(ZoneId.systemDefault()).toEpochSecond()
         );
         return results.stream()
                 .map(result -> new AveragePostsSentimentValueDTO(
@@ -50,9 +71,45 @@ public class TelegramService {
     }
 
     public List<TotalPostsViewsDTO> getTotalPostsViewsByDates(
-            String telegramChannelTitle
+            String telegramChannelTitle,
+            TimeUnit timeUnit,
+            int step,
+            LocalDate startDate,
+            LocalDate endDate
     ) {
-        return telegramPostRepository.getTotalPostsViewsByDates(telegramChannelTitle);
+        List<Object[]> results = telegramPostRepository.getTotalPostsViewsByDates(
+                telegramChannelTitle,
+                timeUnit.name().toLowerCase(),
+                timeUnit.getSecondsFromTimeFrame() * (long) step,
+                startDate.atStartOfDay().atZone(ZoneId.systemDefault()).toEpochSecond(),
+                endDate.atStartOfDay().atZone(ZoneId.systemDefault()).toEpochSecond()
+        );
+        return results.stream()
+                .map(result -> new TotalPostsViewsDTO(
+                        ((Timestamp) result[0]).toLocalDateTime(),
+                        ((Number) result[1]).longValue()))
+                .collect(Collectors.toList());
+    }
+
+    public List<TotalPostsViewsDTO> getTotalPostsViewsByDatesForSegment(
+            Segment segment,
+            TimeUnit timeUnit,
+            int step,
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+        List<Object[]> results = telegramPostRepository.getTotalPostsViewsByDatesForSegment(
+                segment.getSegmentAsString(),
+                timeUnit.name().toLowerCase(),
+                timeUnit.getSecondsFromTimeFrame() * (long) step,
+                startDate.atStartOfDay().atZone(ZoneId.systemDefault()).toEpochSecond(),
+                endDate.atStartOfDay().atZone(ZoneId.systemDefault()).toEpochSecond()
+        );
+        return results.stream()
+                .map(result -> new TotalPostsViewsDTO(
+                        ((Timestamp) result[0]).toLocalDateTime(),
+                        ((Number) result[1]).longValue()))
+                .collect(Collectors.toList());
     }
 
     public List<PostTopicModelingOccurrencesDTO> getPostTopicModelingOccurrencesByDates(
@@ -65,6 +122,30 @@ public class TelegramService {
     ) {
         List<Object[]> results = telegramPostRepository.getPostTopicModelingOccurrencesByDates(
                 telegramChannelTitle,
+                topicsLimitByDate,
+                timeUnit.name().toLowerCase(),
+                timeUnit.getSecondsFromTimeFrame() * (long) step,
+                startDate.atStartOfDay().atZone(ZoneId.systemDefault()).toEpochSecond(),
+                endDate.atStartOfDay().atZone(ZoneId.systemDefault()).toEpochSecond()
+        );
+        return results.stream()
+                .map(result -> new PostTopicModelingOccurrencesDTO(
+                        ((Timestamp) result[0]).toLocalDateTime(),
+                        (String) result[1],
+                        ((Number) result[2]).longValue()))
+                .collect(Collectors.toList());
+    }
+
+    public List<PostTopicModelingOccurrencesDTO> getPostTopicModelingOccurrencesByDatesForSegment(
+            Segment segment,
+            Integer topicsLimitByDate,
+            TimeUnit timeUnit,
+            int step,
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+        List<Object[]> results = telegramPostRepository.getPostTopicModelingOccurrencesByDatesForSegment(
+                segment.getSegmentAsString(),
                 topicsLimitByDate,
                 timeUnit.name().toLowerCase(),
                 timeUnit.getSecondsFromTimeFrame() * (long) step,
@@ -103,6 +184,30 @@ public class TelegramService {
                 .collect(Collectors.toList());
     }
 
+    public List<PostTopicModelingOccurrencesDTO> getPostPhraseTopicModelingOccurrencesByDatesForSegment(
+            Segment segment,
+            Integer topicsLimitByDate,
+            TimeUnit timeUnit,
+            int step,
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+        List<Object[]> results = telegramPostRepository.getPostPhraseTopicModelingOccurrencesByDatesForSegment(
+                segment.getSegmentAsString(),
+                topicsLimitByDate,
+                timeUnit.name().toLowerCase(),
+                timeUnit.getSecondsFromTimeFrame() * (long) step,
+                startDate.atStartOfDay().atZone(ZoneId.systemDefault()).toEpochSecond(),
+                endDate.atStartOfDay().atZone(ZoneId.systemDefault()).toEpochSecond()
+        );
+        return results.stream()
+                .map(result -> new PostTopicModelingOccurrencesDTO(
+                        ((Timestamp) result[0]).toLocalDateTime(),
+                        (String) result[1],
+                        ((Number) result[2]).longValue()))
+                .collect(Collectors.toList());
+    }
+
     public List<CommentsEngagementForPostsDTO> getCommentsEngagementForPostsByDates(
             String telegramChannelTitle,
             TimeUnit timeUnit,
@@ -124,6 +229,27 @@ public class TelegramService {
                 .collect(Collectors.toList());
     }
 
+    public List<CommentsEngagementForPostsDTO> getCommentsEngagementForPostsByDatesForSegment(
+            Segment segment,
+            TimeUnit timeUnit,
+            int step,
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+        List<Object[]> results = telegramPostRepository.getCommentsEngagementForPostsByDatesForSegment(
+                segment.getSegmentAsString(),
+                timeUnit.name().toLowerCase(),
+                timeUnit.getSecondsFromTimeFrame() * (long) step,
+                startDate.atStartOfDay().atZone(ZoneId.systemDefault()).toEpochSecond(),
+                endDate.atStartOfDay().atZone(ZoneId.systemDefault()).toEpochSecond()
+        );
+        return results.stream()
+                .map(result -> new CommentsEngagementForPostsDTO(
+                        ((Timestamp) result[0]).toLocalDateTime(),
+                        ((Number) result[1]).longValue()))
+                .collect(Collectors.toList());
+    }
+
     public List<ReactionsEngagementForPostsDTO> getReactionsEngagementForPostsByDates(
             String telegramChannelTitle,
             TimeUnit timeUnit,
@@ -133,6 +259,27 @@ public class TelegramService {
     ) {
         List<Object[]> results = telegramPostRepository.getReactionsEngagementForPostsByDates(
                 telegramChannelTitle,
+                timeUnit.name().toLowerCase(),
+                timeUnit.getSecondsFromTimeFrame() * (long) step,
+                startDate.atStartOfDay().atZone(ZoneId.systemDefault()).toEpochSecond(),
+                endDate.atStartOfDay().atZone(ZoneId.systemDefault()).toEpochSecond()
+        );
+        return results.stream()
+                .map(result -> new ReactionsEngagementForPostsDTO(
+                        ((Timestamp) result[0]).toLocalDateTime(),
+                        ((Number) result[1]).longValue()))
+                .collect(Collectors.toList());
+    }
+
+    public List<ReactionsEngagementForPostsDTO> getReactionsEngagementForPostsByDatesForSegment(
+            Segment segment,
+            TimeUnit timeUnit,
+            int step,
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+        List<Object[]> results = telegramPostRepository.getReactionsEngagementForPostsByDatesForSegment(
+                segment.getSegmentAsString(),
                 timeUnit.name().toLowerCase(),
                 timeUnit.getSecondsFromTimeFrame() * (long) step,
                 startDate.atStartOfDay().atZone(ZoneId.systemDefault()).toEpochSecond(),
