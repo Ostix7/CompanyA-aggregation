@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 15,
+  "id": 16,
   "links": [],
   "panels": [
     {
@@ -29,9 +29,9 @@
         "x": 0,
         "y": 0
       },
-      "id": 4,
+      "id": 8,
       "panels": [],
-      "title": "Engagement metrics",
+      "title": "Metrics for channels",
       "type": "row"
     },
     {
@@ -87,12 +87,123 @@
         "h": 8,
         "w": 12,
         "x": 0,
+        "y": 1
+      },
+      "id": 7,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 100
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "edixgednkrtvka"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT to_timestamp((EXTRACT(EPOCH FROM TIMESTAMP '${__from:date:YYYY-MM-DD}')) + (DIV(EXTRACT(EPOCH FROM DATE_TRUNC('${time_frame:text}', to_timestamp(t2.published_at/1000))) - (EXTRACT(EPOCH FROM TIMESTAMP '${__from:date:YYYY-MM-DD}')), (${time_frame:value}*${step})) * (${time_frame:value}*${step}))) AS aggregated_date, SUM(t2.likes) as likes_numb \r\nFROM youtube_videos t2 JOIN youtube_channels t3 ON t3.id = t2.channel_id\r\nWHERE t2.published_at/1000 BETWEEN (EXTRACT(EPOCH FROM TIMESTAMP '${__from:date:YYYY-MM-DD}')) AND (EXTRACT(EPOCH FROM TIMESTAMP '${__to:date:YYYY-MM-DD}')) AND t3.title = ${youtube_channel_title:sqlstring} AND t2.is_processed = TRUE\r\nGROUP BY aggregated_date\r\nORDER BY aggregated_date",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Number of likes on the channel $youtube_channel_title",
+      "transparent": true,
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "edixgednkrtvka"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
         "y": 1
       },
       "id": 5,
       "options": {
         "barRadius": 0,
-        "barWidth": 0.88,
+        "barWidth": 0.97,
         "fullHighlight": false,
         "groupWidth": 0.7,
         "legend": {
@@ -109,7 +220,7 @@
           "sort": "none"
         },
         "xTickLabelRotation": 0,
-        "xTickLabelSpacing": 100
+        "xTickLabelSpacing": 0
       },
       "targets": [
         {
@@ -120,7 +231,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select updated_at as time, sum(t1.count) / view_count as engagement \r\nfrom telegram_reaction t1 join telegram_post t2 on t1.post_id = t2.id \r\n\tjoin telegram_channel t3 on t2.channel_id = t3.channel_id \r\nwhere view_count > 0 and t3.channel_title = ${telegram_channel_title:sqlstring} and  $__timeFilter(updated_at) \r\ngroup by telegram_post_id, updated_at, view_count;",
+          "rawSql": "select lower(topic_modeling_phrases) as word, count(lower(topic_modeling_phrases)) as occurences \r\nfrom youtube_caption_phrase_topics t1 join youtube_captions t2 on t1.youtube_caption_id = t2.id join youtube_videos t3 on t2.youtube_video_id = t3.youtube_video_id\r\n  join youtube_channels t4 on t3.channel_id = t4.id  \r\nwhere t4.title = ${youtube_channel_title:sqlstring} and t3.published_at/1000 BETWEEN (EXTRACT(EPOCH FROM TIMESTAMP '${__from:date:YYYY-MM-DD}')) AND (EXTRACT(EPOCH FROM TIMESTAMP '${__to:date:YYYY-MM-DD}')) \r\ngroup by lower(topic_modeling_phrases) \r\norder by occurences desc\r\nlimit ${topic_modeling_words};",
           "refId": "A",
           "sql": {
             "columns": [
@@ -141,7 +252,7 @@
           }
         }
       ],
-      "title": "Engagement by reactions for posts of channel ${telegram_channel_title}",
+      "title": "Top phrases on the channel ${youtube_channel_title} by period",
       "transparent": true,
       "type": "barchart"
     },
@@ -150,7 +261,6 @@
         "type": "grafana-postgresql-datasource",
         "uid": "edixgednkrtvka"
       },
-      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -197,123 +307,13 @@
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 12,
-        "y": 1
+        "x": 0,
+        "y": 9
       },
       "id": 6,
       "options": {
         "barRadius": 0,
-        "barWidth": 0.89,
-        "fullHighlight": false,
-        "groupWidth": 0.7,
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "orientation": "auto",
-        "showValue": "auto",
-        "stacking": "none",
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        },
-        "xTickLabelRotation": 0,
-        "xTickLabelSpacing": 200
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "edixgednkrtvka"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "rawQuery": true,
-          "rawSql": "select cast(updated_at as text) as updated, sum(t1.count) / view_count as engagement \r\nfrom telegram_reaction t1 join telegram_post t2 on t1.post_id = t2.id \r\n\tjoin telegram_channel t3 on t2.channel_id = t3.channel_id \r\nwhere view_count > 0 and t3.channel_title = ${telegram_channel_title:sqlstring} and $__timeFilter(updated_at) \r\ngroup by telegram_post_id, view_count, updated_at \r\norder by engagement desc\r\nlimit ${top_x_posts};",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Top ${top_x_posts} most engaged by reactions posts of channel ${telegram_channel_title}",
-      "transparent": true,
-      "type": "barchart"
-    },
-    {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "edixgednkrtvka"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "fillOpacity": 80,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineWidth": 1,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 9
-      },
-      "id": 7,
-      "options": {
-        "barRadius": 0,
-        "barWidth": 0.92,
+        "barWidth": 0.97,
         "fullHighlight": false,
         "groupWidth": 0.7,
         "legend": {
@@ -341,7 +341,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select updated_at as time, cast(count(comment_id) as decimal) / view_count as engagement_by_comments \r\nfrom telegram_comment t1 join telegram_post t2 on t1.post_id = t2.id \r\n\tjoin telegram_channel t3 on t2.channel_id = t3.channel_id \r\nwhere view_count > 0 and t3.channel_title = ${telegram_channel_title:sqlstring} and $__timeFilter(updated_at) \r\ngroup by telegram_post_id, view_count, updated_at;",
+          "rawSql": "SELECT to_timestamp((EXTRACT(EPOCH FROM TIMESTAMP '${__from:date:YYYY-MM-DD}')) + (DIV(EXTRACT(EPOCH FROM DATE_TRUNC('${time_frame:text}', to_timestamp(t2.published_at/1000))) - (EXTRACT(EPOCH FROM TIMESTAMP '${__from:date:YYYY-MM-DD}')), (${time_frame:value}*${step})) * (${time_frame:value}*${step}))) AS aggregated_date, COUNT(t1.id) as comments_numb \r\nFROM youtube_comments t1 JOIN youtube_videos t2 ON t1.youtube_video_id = t2.youtube_video_id JOIN youtube_channels t3 ON t3.id = t2.channel_id\r\nWHERE t2.published_at/1000 BETWEEN (EXTRACT(EPOCH FROM TIMESTAMP '${__from:date:YYYY-MM-DD}')) AND (EXTRACT(EPOCH FROM TIMESTAMP '${__to:date:YYYY-MM-DD}')) AND t3.title = ${youtube_channel_title:sqlstring} AND t2.is_processed = TRUE\r\nGROUP BY aggregated_date\r\nORDER BY aggregated_date",
           "refId": "A",
           "sql": {
             "columns": [
@@ -362,240 +362,7 @@
           }
         }
       ],
-      "title": "Engagement by comments posts of channel ${telegram_channel_title}",
-      "transparent": true,
-      "type": "barchart"
-    },
-    {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "edixgednkrtvka"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "fillOpacity": 80,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineWidth": 1,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 9
-      },
-      "id": 8,
-      "options": {
-        "barRadius": 0,
-        "barWidth": 0.93,
-        "fullHighlight": false,
-        "groupWidth": 0.7,
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "orientation": "auto",
-        "showValue": "auto",
-        "stacking": "none",
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        },
-        "xTickLabelRotation": 0,
-        "xTickLabelSpacing": 200
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "edixgednkrtvka"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "rawQuery": true,
-          "rawSql": "select cast(updated_at as text) as updated, count(comment_id) as number_of_comments \r\nfrom telegram_comment t1 join telegram_post t2 on t1.post_id = t2.id \r\n  join telegram_channel t3 on t2.channel_id = t3.channel_id \r\nwhere t3.channel_title = ${telegram_channel_title:sqlstring} and $__timeFilter(updated_at) \r\ngroup by telegram_post_id, updated_at \r\norder by number_of_comments desc\r\nlimit ${top_x_posts};",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Top ${top_x_posts} most commented posts on channel ${telegram_channel_title}",
-      "transparent": true,
-      "type": "barchart"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 17
-      },
-      "id": 2,
-      "panels": [],
-      "title": "Sentiment analysis & topic modeling",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "edixgednkrtvka"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": true,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "fillOpacity": 80,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineWidth": 1,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 18
-      },
-      "id": 1,
-      "options": {
-        "barRadius": 0,
-        "barWidth": 0.87,
-        "fullHighlight": false,
-        "groupWidth": 0.7,
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "orientation": "auto",
-        "showValue": "auto",
-        "stacking": "none",
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        },
-        "xTickLabelRotation": 0,
-        "xTickLabelSpacing": 100
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "edixgednkrtvka"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "rawQuery": true,
-          "rawSql": "select updated_at as time, sentiment_value \r\nfrom telegram_post t1 join telegram_channel t2 on t1.channel_id = t2.channel_id \r\nwhere channel_title = ${telegram_channel_title:sqlstring} and $__timeFilter(updated_at) and is_processed = true;",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Sentiment values of ${telegram_channel_title} posts",
+      "title": "Number of comments on channel $youtube_channel_title",
       "transparent": true,
       "type": "barchart"
     },
@@ -652,12 +419,12 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 18
+        "y": 9
       },
       "id": 3,
       "options": {
         "barRadius": 0,
-        "barWidth": 0.86,
+        "barWidth": 0.97,
         "fullHighlight": false,
         "groupWidth": 0.7,
         "legend": {
@@ -685,7 +452,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select lower(topic_modeling) as word, count(lower(topic_modeling)) as occurences \r\nfrom telegram_post_topics t1 join telegram_post t2 on t1.telegram_post_id = t2.id \r\n\tjoin telegram_channel t3 on t2.channel_id = t3.channel_id \r\nwhere channel_title = ${telegram_channel_title:sqlstring} and $__timeFilter(updated_at) \r\ngroup by lower(topic_modeling) \r\norder by occurences desc\r\nlimit ${topic_modeling_words};",
+          "rawSql": "SELECT to_timestamp((EXTRACT(EPOCH FROM TIMESTAMP '${__from:date:YYYY-MM-DD}')) + (DIV(EXTRACT(EPOCH FROM DATE_TRUNC('${time_frame:text}', to_timestamp(t2.published_at/1000))) - (EXTRACT(EPOCH FROM TIMESTAMP '${__from:date:YYYY-MM-DD}')), (${time_frame:value}*${step})) * (${time_frame:value}*${step}))) AS aggregated_date, AVG(t1.sentiment_value) as avg_sentiment \r\nFROM youtube_captions t1 JOIN youtube_videos t2 ON t1.youtube_video_id = t2.youtube_video_id JOIN youtube_channels t3 ON t3.id = t2.channel_id\r\nWHERE t2.published_at/1000 BETWEEN (EXTRACT(EPOCH FROM TIMESTAMP '${__from:date:YYYY-MM-DD}')) AND (EXTRACT(EPOCH FROM TIMESTAMP '${__to:date:YYYY-MM-DD}')) AND t3.title = ${youtube_channel_title:sqlstring} AND t2.is_processed = TRUE\r\nGROUP BY aggregated_date\r\nORDER BY aggregated_date",
           "refId": "A",
           "sql": {
             "columns": [
@@ -706,7 +473,340 @@
           }
         }
       ],
-      "title": "Topic modeling for channel ${telegram_channel_title}",
+      "title": "Average sentiment values for $youtube_channel_title ",
+      "transparent": true,
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "edixgednkrtvka"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 17
+      },
+      "id": 4,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "edixgednkrtvka"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select lower(topic_modeling) as word, count(lower(topic_modeling)) as occurences \r\nfrom youtube_caption_topics t1 join youtube_captions t2 on t1.youtube_caption_id = t2.id join youtube_videos t3 on t2.youtube_video_id = t3.youtube_video_id\r\n  join youtube_channels t4 on t3.channel_id = t4.id \r\nwhere t4.title = ${youtube_channel_title:sqlstring} and t3.published_at/1000 BETWEEN (EXTRACT(EPOCH FROM TIMESTAMP '${__from:date:YYYY-MM-DD}')) AND (EXTRACT(EPOCH FROM TIMESTAMP '${__to:date:YYYY-MM-DD}')) \r\ngroup by lower(topic_modeling) \r\norder by occurences desc\r\nlimit ${topic_modeling_words};",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Top topics on the channel ${youtube_channel_title} by period ",
+      "transparent": true,
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "edixgednkrtvka"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 17
+      },
+      "id": 1,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "never",
+        "stacking": "none",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 200
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "edixgednkrtvka"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select cast(TO_TIMESTAMP(t2.published_at / 1000) as text) as publish_date, count(*) as comments_number \r\nfrom youtube_comments t1 join youtube_videos t2 on t1.youtube_video_id = t2.youtube_video_id \r\n\tjoin youtube_channels t3 on t2.channel_id = t3.id \r\nwhere t3.title = ${youtube_channel_title:sqlstring} and t2.published_at/1000 BETWEEN (EXTRACT(EPOCH FROM TIMESTAMP '${__from:date:YYYY-MM-DD}')) AND (EXTRACT(EPOCH FROM TIMESTAMP '${__to:date:YYYY-MM-DD}')) \r\ngroup by t1.youtube_video_id, t2.published_at  \r\norder by comments_number desc \r\nlimit ${top_x_videos};",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Most commented videos on channel ${youtube_channel_title} by period",
+      "transparent": true,
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "edixgednkrtvka"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 25
+      },
+      "id": 2,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 200
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "edixgednkrtvka"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select cast(TO_TIMESTAMP(t1.published_at / 1000) as text) as publish_date, t1.likes as likes_number \r\nfrom youtube_videos t1 join youtube_channels t2 on t1.channel_id = t2.id \r\nwhere t2.title = ${youtube_channel_title:sqlstring} and t1.published_at/1000 BETWEEN (EXTRACT(EPOCH FROM TIMESTAMP '${__from:date:YYYY-MM-DD}')) AND (EXTRACT(EPOCH FROM TIMESTAMP '${__to:date:YYYY-MM-DD}')) \r\norder by likes_number desc\r\nlimit ${top_x_videos}",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Most liked videos on channel ${youtube_channel_title} by period",
       "transparent": true,
       "type": "barchart"
     }
@@ -719,43 +819,91 @@
       {
         "current": {
           "selected": true,
-          "text": "Я ❤️ Краматорск",
-          "value": "Я ❤️ Краматорск"
+          "text": "hromadske",
+          "value": "hromadske"
         },
         "datasource": {
           "type": "grafana-postgresql-datasource",
           "uid": "edixgednkrtvka"
         },
-        "definition": "select channel_title from telegram_channel;",
+        "definition": "select title from youtube_channels",
         "hide": 0,
         "includeAll": false,
-        "label": "telegram_channel_title",
+        "label": "youtube_channel_title",
         "multi": false,
-        "name": "telegram_channel_title",
+        "name": "youtube_channel_title",
         "options": [],
-        "query": "select channel_title from telegram_channel;",
+        "query": "select title from youtube_channels",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
-        "sort": 2,
+        "sort": 0,
         "type": "query"
       },
       {
         "current": {
           "selected": false,
-          "text": "10",
-          "value": "10"
+          "text": "50",
+          "value": "50"
         },
         "hide": 0,
-        "name": "topic_modeling_words",
+        "name": "top_x_videos",
         "options": [
           {
             "selected": true,
-            "text": "10",
-            "value": "10"
+            "text": "50",
+            "value": "50"
           }
         ],
-        "query": "10",
+        "query": "50",
+        "skipUrlSync": false,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "DAY",
+          "value": "86400"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "time_frame",
+        "multi": false,
+        "name": "time_frame",
+        "options": [
+          {
+            "selected": true,
+            "text": "DAY",
+            "value": "86400"
+          },
+          {
+            "selected": false,
+            "text": "HOUR",
+            "value": "3600"
+          }
+        ],
+        "query": "DAY : 86400, HOUR : 3600",
+        "queryValue": "",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "5",
+          "value": "5"
+        },
+        "hide": 0,
+        "label": "step",
+        "name": "step",
+        "options": [
+          {
+            "selected": true,
+            "text": "5",
+            "value": "5"
+          }
+        ],
+        "query": "5",
         "skipUrlSync": false,
         "type": "textbox"
       },
@@ -766,7 +914,8 @@
           "value": "10"
         },
         "hide": 0,
-        "name": "top_x_posts",
+        "label": "topic_modeling_words",
+        "name": "topic_modeling_words",
         "options": [
           {
             "selected": true,
@@ -781,14 +930,14 @@
     ]
   },
   "time": {
-    "from": "2024-03-31T21:00:00.000Z",
-    "to": "2024-04-29T20:59:59.000Z"
+    "from": "2024-02-01T22:00:00.000Z",
+    "to": "2024-05-02T20:59:59.000Z"
   },
   "timeRangeUpdatedDuringEditOrView": false,
   "timepicker": {},
   "timezone": "browser",
-  "title": "Telegram dashboard",
-  "uid": "edixhbzg36e4gc",
-  "version": 38,
+  "title": "YouTube dashboard",
+  "uid": "bdixpn6cx2ps0d",
+  "version": 21,
   "weekStart": ""
 }
