@@ -1,6 +1,9 @@
 package company.a.charlee.repository.youtube;
 
+import company.a.charlee.entity.dto.TopicInfoDTO;
+import company.a.charlee.entity.dto.TopicPhraseInfoDTO;
 import company.a.charlee.entity.youtube.YoutubeCaption;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -30,5 +33,42 @@ public interface YoutubeCaptionRepository extends JpaRepository<YoutubeCaption, 
             "ORDER BY videoCount DESC")
     List<Object[]> findMostPopularTopicsByVideoCount();
 
+    @Query("SELECT AVG(c.sentimentValue) FROM YoutubeCaption c JOIN c.youtubeVideo v " +
+            "WHERE v.publishedAt BETWEEN :startTimestamp AND :endTimestamp " +
+            "AND c.sentimentValue IS NOT NULL")
+    Double findAverageSentimentBetweenTimestamps(
+            @Param("startTimestamp") long startTimestamp,
+            @Param("endTimestamp") long endTimestamp);
 
+    @Query("SELECT new company.a.charlee.entity.dto.TopicInfoDTO(t, c.language, COUNT(t)) FROM YoutubeCaption c " +
+            "JOIN c.topics t " +
+            "WHERE c.youtubeVideo.publishedAt BETWEEN :startTimestamp AND :endTimestamp " +
+            "AND (:channelId IS NULL OR c.youtubeVideo.youtubeChannel.id = :channelId) " +
+            "AND (:channelName IS NULL OR c.youtubeVideo.youtubeChannel.title = :channelName) " +
+            "AND (:language IS NULL OR c.language = :language) " +
+            "GROUP BY t, c.language " +
+            "ORDER BY count(t) DESC")
+    List<TopicInfoDTO> findMostPopularTopicsInDateRange(
+            @Param("channelId") String channelId,
+            @Param("channelName") String channelName,
+            @Param("language") String language,
+            @Param("startTimestamp") long startTimestamp,
+            @Param("endTimestamp") long endTimestamp,
+            Pageable pageable);
+
+    @Query("SELECT new company.a.charlee.entity.dto.TopicPhraseInfoDTO(t, c.language, COUNT(t)) FROM YoutubeCaption c " +
+            "JOIN c.phraseTopics t " +
+            "WHERE c.youtubeVideo.publishedAt BETWEEN :startTimestamp AND :endTimestamp " +
+            "AND (:channelId IS NULL OR c.youtubeVideo.youtubeChannel.id = :channelId) " +
+            "AND (:channelName IS NULL OR c.youtubeVideo.youtubeChannel.title = :channelName) " +
+            "AND (:language IS NULL OR c.language = :language) " +
+            "GROUP BY t, c.language " +
+            "ORDER BY count(t) DESC")
+    List<TopicPhraseInfoDTO> findMostPopularTopicPhrasesInDateRange(
+            @Param("channelId") String channelId,
+            @Param("channelName") String channelName,
+            @Param("language") String language,
+            @Param("startTimestamp") long startTimestamp,
+            @Param("endTimestamp") long endTimestamp,
+            Pageable pageable);
 }

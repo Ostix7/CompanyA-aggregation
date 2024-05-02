@@ -2,11 +2,13 @@ package company.a.charlee.entity.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
-public class YoutubeCaptionDTO {
-    private String id;
+public class TopicInfoDTO {
+    private String topic;
     private String language;
-    private String content;
+    private Long topicAppearanceCount;
 }

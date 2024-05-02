@@ -1,22 +1,20 @@
 package company.a.charlee.services.youtube;
 
 import company.a.charlee.entity.dto.*;
-import company.a.charlee.entity.youtube.YoutubeChannel;
 import company.a.charlee.entity.youtube.YoutubeVideo;
-import company.a.charlee.entity.youtube.YoutubeComment;
-import company.a.charlee.entity.youtube.YoutubeCaption;
 import company.a.charlee.repository.youtube.YoutubeChannelRepository;
 import company.a.charlee.repository.youtube.YoutubeVideoRepository;
 import company.a.charlee.repository.youtube.YoutubeCommentRepository;
 import company.a.charlee.repository.youtube.YoutubeCaptionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import javax.persistence.EntityNotFoundException;
 
-
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,81 +38,61 @@ public class YoutubeService {
         this.captionRepository = captionRepository;
     }
 
-    @Transactional(readOnly = true)
-    public List<YoutubeChannelDTO> getAllYouTubeChannels() {
-        return channelRepository.findAll().stream()
-                .map(this::convertToChannelDTO)
-                .collect(Collectors.toList());
+    public List<VideoInfoDTO> findMostLikedVideosInDateRange(String channelId, String channelName, long startTimestamp, long endTimestamp, int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        List<YoutubeVideo> videos = videoRepository.findMostLikedByDateRangeAndChannel(channelId, channelName, startTimestamp, endTimestamp, pageable);
+
+        // Removing duplicates based on 'youtube_video_id'
+        List<VideoInfoDTO> uniqueVideos = videos.stream()
+                .collect(Collectors.collectingAndThen(
+                        Collectors.toMap(
+                                YoutubeVideo::getYoutubeVideoId, // keyMapper
+                                video -> new VideoInfoDTO(
+                                        video.getTitle(),
+                                        video.getLikes(),
+                                        video.getYoutubeChannel().getTitle(),
+                                        new Date(video.getPublishedAt())),
+                                (existing, replacement) -> existing, // if the same key is encountered, keep the existing
+                                LinkedHashMap::new),
+                        map -> new ArrayList<>(map.values())));
+
+        return uniqueVideos;
     }
 
-    @Transactional(readOnly = true)
-    public List<YoutubeVideoDTO> getVideosByChannel(String channelId) {
-        return videoRepository.findByChannelId(channelId)
-                .orElseThrow(() -> new EntityNotFoundException("Channel not found with ID: " + channelId))
-                .stream()
-                .map(this::convertToVideoDTO)
-                .collect(Collectors.toList());
+    public List<ActiveCommenterDTO> findActiveCommenters(String channelId, String channelName, long startTimestamp, long endTimestamp, int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        return commentRepository.findActiveCommentersByChannel(channelId, channelName, startTimestamp, endTimestamp, pageable);
     }
 
-    @Transactional(readOnly = true)
-    public List<YoutubeCommentDTO> getCommentsByVideo(String videoId) {
-        return commentRepository.findByVideoId(videoId)
-                .orElseThrow(() -> new EntityNotFoundException("Video not found with ID: " + videoId))
-                .stream()
-                .map(this::convertToCommentDTO)
-                .collect(Collectors.toList());
+    public List<YoutubeChannelDTO> listAllYouTubeChannelNames() {
+        return channelRepository.findAllChannelNames();
     }
 
-    @Transactional(readOnly = true)
-    public List<YoutubeCaptionDTO> getCaptionsByVideo(String videoId) {
-        return captionRepository.findByVideoId(videoId)
-                .orElseThrow(() -> new EntityNotFoundException("Video not found with ID: " + videoId))
-                .stream()
-                .map(this::convertToCaptionDTO)
-                .collect(Collectors.toList());
+    public YoutubeAverageSentimentDTO calculateAverageSentiment(Long startTime, Long endTime) {
+        Double averageSentiment = captionRepository.findAverageSentimentBetweenTimestamps(startTime, endTime);
+        if (averageSentiment == null) {
+            averageSentiment = 0.0; // Default to 0 if no data is found
+        }
+        return new YoutubeAverageSentimentDTO(averageSentiment);
     }
 
-    @Transactional(readOnly = true)
-    public List<YoutubeChannelDTO> findTopChannelsBySubscribersCount(int limit) {
-        return channelRepository.findTopChannelsBySubscribersCount(PageRequest.of(0, limit)).stream()
-                .map(this::convertToChannelDTO)
-                .collect(Collectors.toList());
+    public List<TopicInfoDTO> findMostPopularTopicsInDateRange(String channelId, String channelName, String language, long startTimestamp, long endTimestamp, int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        return captionRepository.findMostPopularTopicsInDateRange(channelId, channelName, language, startTimestamp, endTimestamp, pageable);
     }
 
-    @Transactional(readOnly = true)
-    public List<YoutubeVideoDTO> getMostLikedVideos() {
-        int limit = 10; // Define the number of top videos to fetch
-        return videoRepository.findMostLikedVideos(PageRequest.of(0, limit)).stream()
-                .map(this::convertToVideoDTO)
-                .collect(Collectors.toList());
+    public List<TopicPhraseInfoDTO> findMostPopularTopicPhrasesInDateRange(String channelId, String channelName, String language, long startTimestamp, long endTimestamp, int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        return captionRepository.findMostPopularTopicPhrasesInDateRange(channelId, channelName, language, startTimestamp, endTimestamp, pageable);
     }
 
-    @Transactional(readOnly = true)
-    public Long countProcessedVideos() {
-        return videoRepository.countByIsProcessedTrue();
+    public List<YoutubeCommentDTO> findMostLikedCommentsForVideo(String videoId, int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        return commentRepository.findMostLikedCommentsForVideo(videoId, pageable);
     }
 
-    @Transactional(readOnly = true)
-    public List<TopicCountDTO> findMostPopularTopicsByVideoCount() {
-        return captionRepository.findMostPopularTopicsByVideoCount().stream()
-                .map(result -> new TopicCountDTO((String) result[0], ((Number) result[1]).longValue()))
-                .collect(Collectors.toList());
-    }
-
-    // Helper methods to convert entities to DTOs
-    private YoutubeChannelDTO convertToChannelDTO(YoutubeChannel channel) {
-        return new YoutubeChannelDTO(channel.getId(), channel.getTitle(), channel.getSubscribersCount());
-    }
-
-    private YoutubeVideoDTO convertToVideoDTO(YoutubeVideo video) {
-        return new YoutubeVideoDTO(video.getId(), video.getTitle(), video.getDescription(), video.getPublishedAt());
-    }
-
-    private YoutubeCommentDTO convertToCommentDTO(YoutubeComment comment) {
-        return new YoutubeCommentDTO(comment.getId(), comment.getText(), comment.getLikes(), comment.getAuthorName());
-    }
-
-    private YoutubeCaptionDTO convertToCaptionDTO(YoutubeCaption caption) {
-        return new YoutubeCaptionDTO(caption.getId(), caption.getLanguage(), caption.getContent());
+    public List<YoutubePopularCommentDTO> findMostLikedCommentsInDateRange(String channelId, String channelName, long startTimestamp, long endTimestamp, int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        return commentRepository.findMostLikedCommentsInDateRange(channelId, channelName, startTimestamp, endTimestamp, pageable);
     }
 }

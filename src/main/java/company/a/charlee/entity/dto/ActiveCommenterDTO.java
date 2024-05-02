@@ -7,9 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class YoutubeCommentDTO {
-    private String authorName;
-    private String text;
-    private Long likes;
+public class ActiveCommenterDTO {
+    private String commenterName;
+    private Long commentCount;
 }
-
