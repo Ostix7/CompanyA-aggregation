@@ -1,5 +1,6 @@
 package company.a.charlee.services.telegram;
 
+import company.a.charlee.entity.TimeFrame;
 import company.a.charlee.entity.dto.*;
 import company.a.charlee.repository.telegram.TelegramChannelRepository;
 import company.a.charlee.repository.telegram.TelegramPostRepository;
@@ -7,6 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Date;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,9 +29,24 @@ public class TelegramService {
     }
 
     public List<AveragePostsSentimentValueDTO> getAverageSentimentValuesForChannelPostsByDates(
-            String telegramChannelTitle
+            String telegramChannelTitle,
+            TimeFrame timeFrame,
+            LocalDate startDate,
+            LocalDate endDate
     ) {
-        return telegramPostRepository.getAverageSentimentValuesForChannelPostsByDates(telegramChannelTitle);
+        List<Object[]> results = telegramPostRepository.getAverageSentimentValuesForChannelPostsByDates(
+                telegramChannelTitle,
+                timeFrame.name().toLowerCase(),
+                timeFrame.getSecondsFromTimeFrame(),
+                startDate.atStartOfDay().toEpochSecond(ZoneOffset.UTC),
+                endDate.atStartOfDay().toEpochSecond(ZoneOffset.UTC)
+
+        );
+        return results.stream()
+                .map(result -> new AveragePostsSentimentValueDTO(
+                        ((Timestamp) result[0]).toLocalDateTime(),
+                        ((Number) result[1]).doubleValue()))
+                .collect(Collectors.toList());
     }
 
     public List<TotalPostsViewsDTO> getTotalPostsViewsByDates(
@@ -37,12 +57,22 @@ public class TelegramService {
 
     public List<PostTopicModelingOccurrencesDTO> getPostTopicModelingOccurrencesByDates(
             String telegramChannelTitle,
-            Integer topicsLimitByDate
+            Integer topicsLimitByDate,
+            TimeFrame timeFrame,
+            LocalDate startDate,
+            LocalDate endDate
     ) {
-        List<Object[]> results = telegramPostRepository.getPostTopicModelingOccurrencesByDates(telegramChannelTitle, topicsLimitByDate);
+        List<Object[]> results = telegramPostRepository.getPostTopicModelingOccurrencesByDates(
+                telegramChannelTitle,
+                topicsLimitByDate,
+                timeFrame.name().toLowerCase(),
+                timeFrame.getSecondsFromTimeFrame(),
+                startDate.atStartOfDay().toEpochSecond(ZoneOffset.UTC),
+                endDate.atStartOfDay().toEpochSecond(ZoneOffset.UTC)
+        );
         return results.stream()
                 .map(result -> new PostTopicModelingOccurrencesDTO(
-                        ((Date) result[0]).toLocalDate(),
+                        ((Timestamp) result[0]).toLocalDateTime(),
                         (String) result[1],
                         ((Number) result[2]).longValue()))
                 .collect(Collectors.toList());
@@ -50,27 +80,65 @@ public class TelegramService {
 
     public List<PostTopicModelingOccurrencesDTO> getPostPhraseTopicModelingOccurrencesByDates(
             String telegramChannelTitle,
-            Integer topicsLimitByDate
+            Integer topicsLimitByDate,
+            TimeFrame timeFrame,
+            LocalDate startDate,
+            LocalDate endDate
     ) {
-        List<Object[]> results = telegramPostRepository.getPostPhraseTopicModelingOccurrencesByDates(telegramChannelTitle, topicsLimitByDate);
+        List<Object[]> results = telegramPostRepository.getPostPhraseTopicModelingOccurrencesByDates(
+                telegramChannelTitle,
+                topicsLimitByDate,
+                timeFrame.name().toLowerCase(),
+                timeFrame.getSecondsFromTimeFrame(),
+                startDate.atStartOfDay().toEpochSecond(ZoneOffset.UTC),
+                endDate.atStartOfDay().toEpochSecond(ZoneOffset.UTC)
+        );
         return results.stream()
                 .map(result -> new PostTopicModelingOccurrencesDTO(
-                        ((Date) result[0]).toLocalDate(),
+                        ((Timestamp) result[0]).toLocalDateTime(),
                         (String) result[1],
                         ((Number) result[2]).longValue()))
                 .collect(Collectors.toList());
     }
 
     public List<CommentsEngagementForPostsDTO> getCommentsEngagementForPostsByDates(
-            String telegramChannelTitle
+            String telegramChannelTitle,
+            TimeFrame timeFrame,
+            LocalDate startDate,
+            LocalDate endDate
     ) {
-        return telegramPostRepository.getCommentsEngagementForPostsByDates(telegramChannelTitle);
+        List<Object[]> results = telegramPostRepository.getCommentsEngagementForPostsByDates(
+                telegramChannelTitle,
+                timeFrame.name().toLowerCase(),
+                timeFrame.getSecondsFromTimeFrame(),
+                startDate.atStartOfDay().toEpochSecond(ZoneOffset.UTC),
+                endDate.atStartOfDay().toEpochSecond(ZoneOffset.UTC)
+        );
+        return results.stream()
+                .map(result -> new CommentsEngagementForPostsDTO(
+                        ((Timestamp) result[0]).toLocalDateTime(),
+                        ((Number) result[1]).longValue()))
+                .collect(Collectors.toList());
     }
 
     public List<ReactionsEngagementForPostsDTO> getReactionsEngagementForPostsByDates(
-            String telegramChannelTitle
+            String telegramChannelTitle,
+            TimeFrame timeFrame,
+            LocalDate startDate,
+            LocalDate endDate
     ) {
-        return telegramPostRepository.getReactionsEngagementForPostsByDates(telegramChannelTitle);
+        List<Object[]> results = telegramPostRepository.getReactionsEngagementForPostsByDates(
+                telegramChannelTitle,
+                timeFrame.name().toLowerCase(),
+                timeFrame.getSecondsFromTimeFrame(),
+                startDate.atStartOfDay().toEpochSecond(ZoneOffset.UTC),
+                endDate.atStartOfDay().toEpochSecond(ZoneOffset.UTC)
+        );
+        return results.stream()
+                .map(result -> new ReactionsEngagementForPostsDTO(
+                        ((Timestamp) result[0]).toLocalDateTime(),
+                        ((Number) result[1]).longValue()))
+                .collect(Collectors.toList());
     }
 
     public List<ChannelPostsQuantityDTO> getAllChannelPostsQuantity() {

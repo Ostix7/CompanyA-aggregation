@@ -22,22 +22,22 @@ public class YoutubeVideoProcessor {
         this.youtubeProcessingService = youtubeProcessingService;
     }
 
-    @Scheduled(fixedRate = 600000, initialDelay = 0)
-    public void processUnprocessedVideos() {
-        log.info("STARTED PROCESSING YOUTUBE VIDEOS");
-        List<YoutubeVideo> unprocessedVideos;
-        do {
-            unprocessedVideos = youtubeVideoRepository.get100NotProcessedVideos();
-            for (YoutubeVideo video : unprocessedVideos) {
-                try {
-                    youtubeProcessingService.doAnalyse(video);
-                    video.setIsProcessed(true);
-                    youtubeVideoRepository.save(video);
-                } catch (Exception e) {
-                    log.error("FAILED TO PROCESS YOUTUBE VIDEO: " + e.getMessage());
-                }
-            }
-        } while (unprocessedVideos.size() == 100);
-    }
+//    @Scheduled(fixedRate = 600000, initialDelay = 0)
+//    public void processUnprocessedVideos() {
+//        log.info("STARTED PROCESSING YOUTUBE VIDEOS");
+//        List<YoutubeVideo> unprocessedVideos;
+//        do {
+//            unprocessedVideos = youtubeVideoRepository.get100NotProcessedVideos();
+//            for (YoutubeVideo video : unprocessedVideos) {
+//                try {
+//                    youtubeProcessingService.doAnalyse(video);
+//                    video.setIsProcessed(true);
+//                    youtubeVideoRepository.save(video);
+//                } catch (Exception e) {
+//                    log.error("FAILED TO PROCESS YOUTUBE VIDEO: " + e.getMessage());
+//                }
+//            }
+//        } while (unprocessedVideos.size() == 100);
+//    }
 
 }
