@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class YoutubeChannelDTO {
-    private String id;
+    private String youtubeChannelId;
     private String title;
     private Long subscribersCount;
 }
